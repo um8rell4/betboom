@@ -3,6 +3,7 @@ import random
 from .models import UserProfile
 
 
+#Функция создания уникального реф кода
 def generate_unique_referral_code(length=8):
     characters = string.ascii_uppercase + string.digits #Все знаки допустимые в рефералке
     while True:

@@ -80,8 +80,12 @@ WSGI_APPLICATION = 'umbrellabets.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'betboom',
+        'USER': 'postgres',
+        'PASSWORD': 'Saltanov2609-',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 

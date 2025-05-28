@@ -1,0 +1,20 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение email на UmbrellaBet</title>
+</head>
+<body>
+    <h3>Подтвердите ваш email</h3>
+    <p>Здравствуйте, {{ user.username }}!</p>
+
+    <p>Для завершения регистрации на CyberBet перейдите по ссылке:</p>
+    <p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
+
+    <p>Если вы не регистрировались на нашем сайте, проигнорируйте это письмо.</p>
+
+    <p>С уважением,<br>Команда CyberBet</p>
+</body>
+</html>
+{% endautoescape %}

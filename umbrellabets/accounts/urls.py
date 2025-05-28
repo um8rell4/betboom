@@ -7,8 +7,18 @@ app_name = 'accounts'
 # Список маршрутов (URL patterns) для данного приложения
 urlpatterns = [
     # URL /register/ будет обрабатывать функция register_view из файла views.py
-    # Имя маршрута — 'register', можно использовать в шаблонах и redirect'ах
+    # Регистрация и подтверждение email
     path('register/', views.register_view, name='register'),
+    path(
+        'confirm-email/<uuid:confirmation_code>/',
+        views.confirm_email_view,
+        name='confirm-email'
+    ),
+    path(
+        'resend-confirmation/',
+        views.resend_confirmation_view,
+        name='resend-confirmation'
+    ),
 
     # URL /login/ — вход в аккаунт
     path('login/', views.login_view, name='login'),

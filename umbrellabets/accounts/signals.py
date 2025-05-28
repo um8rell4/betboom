@@ -14,3 +14,8 @@ def create_user_profile(sender, instance, created, **kwargs):
         profile.referral_code = generate_unique_referral_code()
         profile.save()
 
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Сохраняет профиль при сохранении пользователя"""
+    instance.profile.save()

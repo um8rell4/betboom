@@ -7,6 +7,15 @@
 {% endblock %}
 
 {% block content %}
+{% if not user.profile.email_confirmed %}
+<div class="alert alert-warning">
+    <strong>Ваш email не подтвержден!</strong>
+    <p>Для полного доступа к функциям сайта подтвердите ваш email.</p>
+    <a href="{% url 'accounts:resend-confirmation' %}" class="btn btn-warning">
+        Отправить письмо повторно
+    </a>
+</div>
+{% endif %}
 <div class="profile-container">
     <div class="profile-header">
         <div class="user-avatar">

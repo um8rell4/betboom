@@ -189,3 +189,46 @@
 .user-avatar.small .user-avatar-initials {
     font-size: 1rem;
 }
+/* Стили для реферального кода */
+.referral-code-container {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    background-color: rgba(59, 130, 246, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.referral-code-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-right: 8px;
+}
+
+.referral-code-value {
+    font-weight: 600;
+    color: var(--accent);
+    margin-right: 12px;
+}
+
+.copy-referral-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.copy-referral-btn:hover {
+    background-color: rgba(59, 130, 246, 0.2);
+}
+
+.copy-referral-btn i {
+    margin-right: 5px;
+}

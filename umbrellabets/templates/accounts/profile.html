@@ -3,6 +3,7 @@
 
 {% block title %}Профиль | CyberBet{% endblock %}
 {% block static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/accounts/profile.css' %}">
 {% endblock %}
 
@@ -28,11 +29,20 @@
         <div class="profile-info">
             <h1 class="profile-username">{{ user.username }}</h1>
             <p class="profile-email">{{ user.email }}</p>
+            <!-- Добавленный блок с реферальным кодом -->
+            <div class="referral-code-container">
+                <span class="referral-code-label">Ваш реферальный код:</span>
+                <div class="referral-code-value" id="referralCode">{{ user.profile.referral_code }}</div>
+                <button class="copy-referral-btn" onclick="copyReferralCode()">
+                    <i class="fas fa-copy"></i> Копировать
+                </button>
+            </div>
         </div>
 
         <a href="{% url 'accounts:edit_profile' %}" class="edit-profile-button">Редактировать</a>
     </div>
-    
+
+    <!-- Остальная часть шаблона остается без изменений -->
     <div class="profile-stats">
         <div class="stat-card balance">
             <div class="stat-title">Баланс</div>
@@ -40,7 +50,7 @@
                                                                                   alt="My image" width="20"></div>
             <button class="deposit-button">Пополнить баланс</button>
         </div>
-        
+
         <div class="stat-card wins">
             <div class="stat-title">Выиграно ставок</div>
             <div class="stat-value">{{ user.profile.wins }}</div>
@@ -48,7 +58,7 @@
             <div class="stat-value">{{ user.profile.total_won }} <img src="{% static 'account/123.png' %}"
                                                                                   alt="My image" width="20"></div>
         </div>
-        
+
         <div class="stat-card bets">
             <div class="stat-title">Всего ставок</div>
             <div class="stat-value">{{ user.profile.total_bets }}</div>
@@ -62,7 +72,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="profile-section">
         <h2 class="section-title">Последние ставки</h2>
         <table class="bet-history">
@@ -96,7 +106,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <div class="profile-section">
         <h2 class="section-title">История транзакций</h2>
         <table class="bet-history">
@@ -127,4 +137,28 @@
         </table>
     </div>
 </div>
+{% block extra_js %}
+<script>
+function copyReferralCode() {
+    // Получаем реферальный код
+    const referralCode = document.getElementById('referralCode').innerText;
+
+    // Копируем в буфер обмена
+    navigator.clipboard.writeText(referralCode).then(() => {
+        // Показываем уведомление
+        const copyBtn = document.querySelector('.copy-referral-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+
+        // Возвращаем исходный текст через 2 секунды
+        setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+        }, 2000);
+    }).catch(err => {
+        console.error('Ошибка при копировании: ', err);
+    });
+}
+</script>
+{% endblock %}
+
 {% endblock %}

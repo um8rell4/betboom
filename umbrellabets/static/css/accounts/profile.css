@@ -1,0 +1,191 @@
+        /* Стили профиля */
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-bg);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-right: 1.5rem;
+            color: var(--text);
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .profile-username {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-email {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.balance {
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-card.wins {
+            border-left: 4px solid var(--success);
+        }
+
+        .stat-card.bets {
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .balance-value {
+            color: var(--accent);
+        }
+
+        .profile-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--card-bg);
+        }
+
+        .bet-history {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bet-history th, .bet-history td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-bg);
+        }
+
+        .bet-history th {
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .bet-status.won {
+            color: var(--success);
+        }
+
+        .bet-status.lost {
+            color: var(--danger);
+        }
+
+        .bet-status.pending {
+            color: #f59e0b;
+        }
+
+        .deposit-button {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .deposit-button:hover {
+            background-color: #059669;
+        }
+
+        .edit-profile-button {
+            background-color: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .edit-profile-button:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        /* Общие стили аватара */
+.user-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 0 auto;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar-initials {
+    font-size: 3rem;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Для маленьких аватаров (например, в шапке) */
+.user-avatar.small {
+    width: 40px;
+    height: 40px;
+}
+
+.user-avatar.small .user-avatar-initials {
+    font-size: 1rem;
+}

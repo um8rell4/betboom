@@ -14,9 +14,3 @@ def create_user_profile(sender, instance, created, **kwargs):
         profile.referral_code = generate_unique_referral_code()
         profile.save()
 
-
-#Сигналы для авто-создания профиля при регистрации
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)

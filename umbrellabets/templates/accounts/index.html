@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная | CyberBet{% endblock %}
+
+{% block content %}
+<div class="sports-tabs">
+    <div class="sport-tab active">CS2</div>
+    <div class="sport-tab">Dota 2</div>
+</div>
+
+<div class="matches-container">
+    {% for match in matches %}
+    <div class="match-card" data-sport="{{ match.sport }}">
+        <div class="match-header">
+            <div class="match-tournament">{{ match.tournament }}</div>
+            <div class="match-time">
+                {{ match.date|date:"d.m.Y H:i" }}
+                {% if match.is_live %}<span class="live-badge">LIVE</span>{% endif %}
+            </div>
+        </div>
+        <div class="teams">
+            <div class="team">
+                <div class="team-logo">{{ match.team1.short_name }}</div>
+                <div class="team-name">{{ match.team1.name }}</div>
+            </div>
+            <div class="team">
+                <div class="team-logo">{{ match.team2.short_name }}</div>
+                <div class="team-name">{{ match.team2.name }}</div>
+            </div>
+        </div>
+        <div class="odds">
+            <div class="odd" data-bet-type="1">
+                <div>П1</div>
+                <div class="odd-value">{{ match.odds.1 }}</div>
+            </div>
+            {% if match.sport == 'CS2' %}
+            <div class="odd" data-bet-type="X">
+                <div>Ничья</div>
+                <div class="odd-value">{{ match.odds.X }}</div>
+            </div>
+            {% endif %}
+            <div class="odd" data-bet-type="2">
+                <div>П2</div>
+                <div class="odd-value">{{ match.odds.2 }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение между CS2 и Dota 2
+    document.querySelectorAll('.sport-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.sport-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const sport = tab.textContent.trim();
+            document.querySelectorAll('.match-card').forEach(match => {
+                match.style.display = match.dataset.sport === sport ? 'block' : 'none';
+            });
+        });
+    });
+    
+    // Обработка кликов по коэффициентам
+    document.querySelectorAll('.odd').forEach(odd => {
+        odd.addEventListener('click', function() {
+            const matchCard = this.closest('.match-card');
+            const teams = matchCard.querySelectorAll('.team-name');
+            const team1 = teams[0].textContent;
+            const team2 = teams[1].textContent;
+            const betType = this.dataset.betType;
+            const oddValue = this.querySelector('.odd-value').textContent;
+            
+            // Здесь можно добавить логику для открытия модального окна с формой ставки
+            console.log(`Ставка: ${team1} vs ${team2}, Тип: ${betType}, Коэф: ${oddValue}`);
+        });
+    });
+});
+</script>
+{% endblock %}

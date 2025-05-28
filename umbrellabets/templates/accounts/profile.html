@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{%load static %}
+
+{% block title %}Профиль | CyberBet{% endblock %}
+{% block static %}
+<link rel="stylesheet" href="{% static 'css/accounts/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="user-avatar">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="Аватар {{ user.username }}">
+            {% else %}
+                <div class="user-avatar-initials">{{ user.username|first|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1 class="profile-username">{{ user.username }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+        </div>
+
+        <a href="{% url 'accounts:edit_profile' %}" class="edit-profile-button">Редактировать</a>
+    </div>
+    
+    <div class="profile-stats">
+        <div class="stat-card balance">
+            <div class="stat-title">Баланс</div>
+            <div class="stat-value balance-value">{{ user.profile.balance }} <img src="{% static 'account/123.png' %}"
+                                                                                  alt="My image" width="20"></div>
+            <button class="deposit-button">Пополнить баланс</button>
+        </div>
+        
+        <div class="stat-card wins">
+            <div class="stat-title">Выиграно ставок</div>
+            <div class="stat-value">{{ user.profile.wins }}</div>
+            <div class="stat-title">Сумма выигрышей</div>
+            <div class="stat-value">{{ user.profile.total_won }} <img src="{% static 'account/123.png' %}"
+                                                                                  alt="My image" width="20"></div>
+        </div>
+        
+        <div class="stat-card bets">
+            <div class="stat-title">Всего ставок</div>
+            <div class="stat-value">{{ user.profile.total_bets }}</div>
+            <div class="stat-title">Процент успеха</div>
+            <div class="stat-value">
+                {% if user.profile.total_bets > 0 %}
+                    <!--user.profile.wins|divide:user.profile.total_bets|multiply:100|floatformat:1 }}% -->
+                {% else %}
+                    0%
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-section">
+        <h2 class="section-title">Последние ставки</h2>
+        <table class="bet-history">
+            <thead>
+                <tr>
+                    <th>Матч</th>
+                    <th>Ставка</th>
+                    <th>Коэффициент</th>
+                    <th>Сумма</th>
+                    <th>Возможный выигрыш</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bet in user.bets.all|slice:":10" %}
+                <tr>
+                    <td>{{ bet.match.team1 }} vs {{ bet.match.team2 }}</td>
+                    <td>{{ bet.get_bet_type_display }}</td>
+                    <td>{{ bet.odds }}</td>
+                    <td>{{ bet.amount }} ₽</td>
+                    <td>{{ bet.possible_win }} ₽</td>
+                    <td class="bet-status {{ bet.status }}">{{ bet.get_status_display }}</td>
+                    <td>{{ bet.created_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">Вы еще не делали ставок</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="profile-section">
+        <h2 class="section-title">История транзакций</h2>
+        <table class="bet-history">
+            <thead>
+                <tr>
+                    <th>Тип</th>
+                    <th>Сумма</th>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Комментарий</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in user.transactions.all|slice:":5" %}
+                <tr>
+                    <td>{{ transaction.get_transaction_type_display }}</td>
+                    <td>{{ transaction.amount }} ₽</td>
+                    <td>{{ transaction.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ transaction.get_status_display }}</td>
+                    <td>{{ transaction.comment|default:"" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">Нет транзакций</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

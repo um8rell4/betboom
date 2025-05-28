@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CyberBet - Ставки на CS2 и Dota 2{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/accounts/base.css' %}">
+    {% block static %} {% endblock %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="logo">Um8rell4<span>Bet</span></div>
+        <nav>
+            <ul>
+                <li><a href="#">Главная</a></li> <!-- home href -->
+                <li><a href="#">Линия</a></li> <!--url 'matches' -->
+                <li><a href="#">Live</a></li> <!--url 'live_matches' -->
+                <li><a href="$">Результаты</a></li> <!--url 'results'-->
+                <li><a href="#">Новости</a></li> <!--url 'news'-->
+                <li><a href="#">Промо</a></li> <!--url 'promo'-->
+            </ul>
+        </nav>
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+                <div class="user-balance">
+                    {{ user.profile.balance }} <img src="{% static 'account/123.png' %}"
+                                                                                  alt="My image" width="15">
+                </div>
+                <a href="{% url 'accounts:profile' %}" class="navbar-avatar" title="Мой профиль">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="Аватар {{ user.username }}">
+                    {% else %}
+                        <div class="navbar-avatar-initials">{{ user.username|first|upper }}</div>
+                    {% endif %}
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="auth-button logout">Выйти</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="auth-button login">Войти</a>
+                <a href="{% url 'accounts:register' %}" class="auth-button register">Регистрация</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="#">О нас</a> <!-- url 'about' -->
+            <a href="#">Правила</a> <!-- url 'rules' -->
+            <a href="#">Ответственная игра</a> <!-- url 'responsible_gaming' -->
+            <a href="#">Контакты</a> <!-- url 'contacts' -->
+            <a href="#">Поддержка</a> <!-- url 'support' -->
+        </div>
+        <div class="copyright">
+            © {% now "Y" %} CyberBet. Все права защищены. Лицензия №1234567890
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация | CyberBet{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2 class="auth-title">Регистрация</h2>
+
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="message error">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <div class="message error">{{ form.username.errors.as_text }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="message error">{{ form.email.errors.as_text }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">Пароль</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+            <div class="message error">{{ form.password1.errors.as_text }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">Подтверждение пароля</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+            <div class="message error">{{ form.password2.errors.as_text }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+
+    <div class="auth-link">
+        Уже есть аккаунт? <a href="{% url 'accounts:login' %}">Войти</a> <!-- url 'login' -->
+    </div>
+</div>
+{% endblock %}

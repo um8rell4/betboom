@@ -155,3 +155,6 @@ SITE_NAME = "Um8rell4Bet"  # Будет использоваться в пись
 
 # Важно для Yandex
 EMAIL_TIMEOUT = 10  # Таймаут соединения
+
+EMAIL_USE_TLS = False  # Используйте либо SSL, либо TLS
+DEFAULT_CHARSET = 'utf-8'

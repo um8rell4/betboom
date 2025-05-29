@@ -189,46 +189,56 @@
 .user-avatar.small .user-avatar-initials {
     font-size: 1rem;
 }
-/* Стили для реферального кода */
-.referral-code-container {
-    margin-top: 15px;
-    display: flex;
-    align-items: center;
-    background-color: rgba(59, 130, 246, 0.1);
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
+/* Стили для реферального блока */
+    .referral-section {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-.referral-code-label {
-    font-size: 0.9rem;
-    color: #64748b;
-    margin-right: 8px;
-}
+    .referral-line {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+    }
 
-.referral-code-value {
-    font-weight: 600;
-    color: var(--accent);
-    margin-right: 12px;
-}
+    .referral-label {
+        font-size: 14px;
+        color: #64748b; /* Серый цвет */
+    }
 
-.copy-referral-btn {
-    background: none;
-    border: none;
-    color: var(--accent);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-size: 0.9rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-}
+    .referral-code {
+        font-family: 'Courier New', monospace;
+        font-size: 15px;
+        font-weight: 600;
+        color: #3b82f6; /* Синий цвет */
+        letter-spacing: 0.5px;
+    }
 
-.copy-referral-btn:hover {
-    background-color: rgba(59, 130, 246, 0.2);
-}
+    .copy-referral {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
 
-.copy-referral-btn i {
-    margin-right: 5px;
-}
+    .copy-referral:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .copy-referral svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .copy-referral.copied {
+        color: #10b981; /* Зеленый при копировании */
+    }

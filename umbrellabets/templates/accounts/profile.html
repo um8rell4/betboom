@@ -29,12 +29,19 @@
         <div class="profile-info">
             <h1 class="profile-username">{{ user.username }}</h1>
             <p class="profile-email">{{ user.email }}</p>
-            <!-- Добавленный блок с реферальным кодом -->
-            <div class="referral-code-container">
-                <span class="referral-code-label">Ваш реферальный код:</span>
-                <div class="referral-code-value" id="referralCode">{{ user.profile.referral_code }}</div>
-                <button class="copy-referral-btn" onclick="copyReferralCode()">
-                    <i class="fas fa-copy"></i> Копировать
+
+            <!-- Реферальный код - минималистичный вариант -->
+            <div class="referral-section">
+                <div class="referral-line">
+                    <span class="referral-label">Реферальный код:</span>
+                    <span class="referral-code" id="referralCode">{{ user.profile.referral_code }}</span>
+                </div>
+                <button class="copy-referral" onclick="copyReferralCode()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Копировать
                 </button>
             </div>
         </div>
@@ -140,22 +147,45 @@
 {% block extra_js %}
 <script>
 function copyReferralCode() {
-    // Получаем реферальный код
-    const referralCode = document.getElementById('referralCode').innerText;
+    const code = '{{ user.profile.referral_code }}';
+    const btn = document.querySelector('.copy-referral');
 
-    // Копируем в буфер обмена
-    navigator.clipboard.writeText(referralCode).then(() => {
-        // Показываем уведомление
-        const copyBtn = document.querySelector('.copy-referral-btn');
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+    // Современный API копирования
+    navigator.clipboard.writeText(code).then(() => {
+        btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Скопировано!
+        `;
+        btn.classList.add('copied');
 
-        // Возвращаем исходный текст через 2 секунды
         setTimeout(() => {
-            copyBtn.innerHTML = originalText;
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Копировать
+            `;
+            btn.classList.remove('copied');
         }, 2000);
     }).catch(err => {
-        console.error('Ошибка при копировании: ', err);
+        console.error('Ошибка копирования: ', err);
+        // Fallback для старых браузеров
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        btn.textContent = 'Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = 'Копировать';
+            btn.classList.remove('copied');
+        }, 2000);
     });
 }
 </script>

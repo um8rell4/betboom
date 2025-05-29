@@ -17,31 +17,33 @@ import uuid
 
 def register_view(request):
     """
-    Обработка регистрации нового пользователя с подтверждением email.
-    Сохраняет пользователя с is_active=False, отправляет письмо с подтверждением.
+    Обработка регистрации нового пользователя с подтверждением email и реферальной системой.
+    Сохраняет пользователя с is_active=False, отправляет письмо с подтверждением,
+    обрабатывает реферальные коды и начисляет бонусы.
     """
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            # Сохраняем пользователя с is_active=False
-            user = form.save(commit=False)
-            user.is_active = False  # Аккаунт неактивен до подтверждения email
-            user.save()
-
-            # Создаем/обновляем профиль с кодом подтверждения
-            profile = user.profile
-            profile.email_confirmation_code = uuid.uuid4()
-            profile.save()
+            # Сохраняем пользователя через форму (форма уже обрабатывает реферальную систему)
+            user = form.save()
 
             try:
                 # Отправка письма с подтверждением
-                send_confirmation_email(request, user)
+                user.profile.send_confirmation_email(request)
 
-                # Информируем пользователя о необходимости подтверждения email
+                # Определяем тип бонуса для сообщения
+                bonus_message = ""
+                if hasattr(user, 'profile') and user.profile.referred_by:
+                    bonus_message = "Вам начислен реферальный бонус: 5000"
+                else:
+                    bonus_message = "Вам начислен стартовый бонус: 5000"
+
+                # Информируем пользователя о регистрации и бонусе
                 messages.success(
                     request,
-                    "Регистрация почти завершена! "
-                    "Пожалуйста, проверьте ваш email и перейдите по ссылке для подтверждения."
+                    f"Регистрация почти завершена! "
+                    f"Пожалуйста, проверьте ваш email и перейдите по ссылке для подтверждения. "
+                    f"{bonus_message}"
                 )
                 return redirect('accounts:login')  # Перенаправляем на страницу входа
 
@@ -55,7 +57,11 @@ def register_view(request):
                 )
                 return redirect('accounts:register')
     else:
-        form = UserRegisterForm()
+        # Автозаполнение реферального кода из GET-параметра
+        initial = {}
+        if 'ref' in request.GET:
+            initial['referral_code'] = request.GET['ref']
+        form = UserRegisterForm(initial=initial)
 
     return render(request, 'accounts/register.html', {'form': form})
 
@@ -97,12 +103,25 @@ def confirm_email_view(request, confirmation_code):
     Обрабатывает подтверждение email по ссылке из письма.
     Активирует аккаунт пользователя при успешном подтверждении.
     """
+    print(f"Received confirmation_code: {confirmation_code}")
+    print(f"Type of confirmation_code: {type(confirmation_code)}")
+
+    # Проверим, есть ли вообще профили с неподтвержденным email
+    unconfirmed_profiles = UserProfile.objects.filter(email_confirmed=False)
+    print(f"Unconfirmed profiles count: {unconfirmed_profiles.count()}")
+
+    for profile in unconfirmed_profiles:
+        print(
+            f"Profile {profile.user.username}: code={profile.email_confirmation_code}, type={type(profile.email_confirmation_code)}")
+
     try:
         # Ищем профиль с неподтвержденным email и совпадающим кодом
         profile = UserProfile.objects.get(
             email_confirmation_code=confirmation_code,
             email_confirmed=False
         )
+
+        print(f"Found matching profile: {profile.user.username}")
 
         # Подтверждаем email и активируем аккаунт
         profile.email_confirmed = True
@@ -122,6 +141,7 @@ def confirm_email_view(request, confirmation_code):
         return redirect('accounts:profile')
 
     except UserProfile.DoesNotExist:
+        print("Profile not found with given confirmation code")
         messages.error(
             request,
             "Неверный или устаревший код подтверждения. "

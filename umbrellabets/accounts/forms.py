@@ -22,9 +22,24 @@ class UserRegisterForm(UserCreationForm):
         help_text="На этот адрес будет отправлено письмо с подтверждением"
     )
 
+    referral_code = forms.CharField(
+        required=False,
+        label='Реферальный код (если есть)',
+        widget=forms.TextInput(attrs={'placeholder': 'Необязательно'}),
+        help_text="Введите код друга, который вас пригласил"
+    )
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'password1', 'password2', 'referral_code']
+
+    def clean_referral_code(self):
+        """Проверяет корректность реферального кода"""
+        code = self.cleaned_data.get('referral_code')
+        if code:
+            if not UserProfile.objects.filter(referral_code=code).exists():
+                raise forms.ValidationError("Неверный реферальный код")
+        return code
 
     def clean_email(self):
         """Проверяет, что email уникален и не используется другим пользователем"""
@@ -35,16 +50,29 @@ class UserRegisterForm(UserCreationForm):
 
     def save(self, commit=True):
         """
-        Сохраняет пользователя с is_active=False и создает код подтверждения
+        Сохраняет пользователя с is_active=False
         """
         user = super().save(commit=False)
         user.is_active = False  # Аккаунт неактивен до подтверждения email
 
         if commit:
             user.save()
-            # Создаем или обновляем профиль с кодом подтверждения
-            profile, created = UserProfile.objects.get_or_create(user=user)
-            profile.email_confirmation_code = uuid.uuid4()
+
+            # Получаем профиль (уже создан сигналом с кодом подтверждения)
+            profile = user.profile
+
+            # Обработка реферального кода
+            referral_code = self.cleaned_data.get('referral_code')
+            if referral_code:
+                try:
+                    referrer_profile = UserProfile.objects.get(referral_code=referral_code)
+                    profile.referred_by = referrer_profile.user
+                    # Добавляем бонус рефереру (если метод существует)
+                    if hasattr(referrer_profile, 'add_referral_bonus'):
+                        referrer_profile.add_referral_bonus(user)
+                except UserProfile.DoesNotExist:
+                    pass  # Код уже проверен в clean_referral_code
+
             profile.save()
 
         return user

@@ -6,6 +6,8 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import uuid
 from decimal import Decimal
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
 
 
 def user_avatar_path(instance, filename):
@@ -113,37 +115,46 @@ class UserProfile(models.Model):
     def send_confirmation_email(self, request):
         """
         Отправляет email с подтверждением регистрации.
-
-        Args:
-            request: HttpRequest объект для получения домена и протокола
         """
         from django.urls import reverse
+        import logging
 
-        subject = "Подтвердите ваш email на CyberBet"
+        logger = logging.getLogger(__name__)
 
-        # Создаем полный URL для подтверждения
-        confirm_url = request.build_absolute_uri(
-            reverse('accounts:confirm-email', kwargs={'confirmation_code': self.email_confirmation_code})
-        )
+        try:
+            subject = "Подтверждение email на CyberBet"
 
-        # Рендер HTML шаблона письма
-        html_message = render_to_string('accounts/email_confirmation_email.html', {
-            'user': self.user,
-            'confirmation_code': self.email_confirmation_code,
-            'confirm_url': confirm_url,  # Добавляем эту переменную
-            'domain': request.get_host(),
-            'protocol': 'https' if request.is_secure() else 'http',
-        })
+            # Создаем полный URL для подтверждения
+            confirm_url = request.build_absolute_uri(
+                reverse('accounts:confirm-email', kwargs={'confirmation_code': self.email_confirmation_code})
+            )
 
-        # Отправка письма (HTML и текстовая версия)
-        send_mail(
-            subject=subject,
-            message=strip_tags(html_message),  # Текстовая версия
-            from_email='um8rell4bets@yandex.ru',
-            recipient_list=[self.user.email],
-            html_message=html_message,  # HTML версия
-            fail_silently=False,
-        )
+            # Рендер HTML шаблона письма
+            html_message = render_to_string('accounts/email_confirmation_email.html', {
+                'user': self.user,
+                'confirmation_code': self.email_confirmation_code,
+                'confirm_url': confirm_url,
+                'domain': request.get_host(),
+                'protocol': 'https' if request.is_secure() else 'http',
+            })
+
+            logger.info(f"Отправка письма на {self.user.email}")
+
+            # Отправка письма
+            send_mail(
+                subject=subject,
+                message=strip_tags(html_message),
+                from_email='um8rell4bets@yandex.ru',
+                recipient_list=[self.user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+
+            logger.info(f"Письмо успешно отправлено на {self.user.email}")
+
+        except Exception as e:
+            logger.error(f"Ошибка отправки письма: {str(e)}")
+            raise e
 
     def add_referral_bonus(self, referred_user):
         """Начисляет бонусы за реферала"""
@@ -255,3 +266,30 @@ class Transaction(models.Model):
                 profile.balance -= self.amount
 
         profile.save()
+
+@receiver(pre_save, sender=Transaction)
+def transaction_pre_save(sender, instance, **kwargs):
+    """Сохраняем старый статус перед изменением"""
+    if instance.pk:
+        try:
+            old_instance = Transaction.objects.get(pk=instance.pk)
+            instance._old_status = old_instance.status
+        except Transaction.DoesNotExist:
+            instance._old_status = None
+    else:
+        instance._old_status = None
+
+
+@receiver(post_save, sender=Transaction)
+def transaction_post_save(sender, instance, created, **kwargs):
+    """Обновляем баланс после сохранения транзакции"""
+    old_status = getattr(instance, '_old_status', None)
+
+    if created:
+        # Новая транзакция
+        if instance.status == 'completed':
+            instance.update_user_balance()
+    else:
+        # Обновление существующей транзакции
+        if old_status != instance.status:
+            instance.update_user_balance(old_status)

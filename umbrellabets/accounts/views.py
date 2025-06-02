@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, authenticate, logout
-from .forms import UserRegisterForm, CustomPasswordChangeForm, UserEditForm, ProfileEditForm
+from .forms import (
+    UserRegisterForm, CustomPasswordChangeForm, UserEditForm,
+    ProfileEditForm, EmailOrUsernameAuthenticationForm  # Добавить новую форму
+)
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import UserProfile
+from .models import UserProfile, Transaction
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView, PasswordResetView
 from django.urls import reverse_lazy
@@ -13,6 +16,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 import uuid
+from django.contrib.auth.models import User
 
 
 def register_view(request):
@@ -101,87 +105,117 @@ def send_confirmation_email(request, user):
 def confirm_email_view(request, confirmation_code):
     """
     Обрабатывает подтверждение email по ссылке из письма.
-    Активирует аккаунт пользователя при успешном подтверждении.
     """
-    print(f"Received confirmation_code: {confirmation_code}")
-    print(f"Type of confirmation_code: {type(confirmation_code)}")
-
-    # Проверим, есть ли вообще профили с неподтвержденным email
-    unconfirmed_profiles = UserProfile.objects.filter(email_confirmed=False)
-    print(f"Unconfirmed profiles count: {unconfirmed_profiles.count()}")
-
-    for profile in unconfirmed_profiles:
-        print(
-            f"Profile {profile.user.username}: code={profile.email_confirmation_code}, type={type(profile.email_confirmation_code)}")
+    from .models import Transaction
 
     try:
-        # Ищем профиль с неподтвержденным email и совпадающим кодом
         profile = UserProfile.objects.get(
             email_confirmation_code=confirmation_code,
             email_confirmed=False
         )
-
-        print(f"Found matching profile: {profile.user.username}")
 
         # Подтверждаем email и активируем аккаунт
         profile.email_confirmed = True
         profile.save()
 
         user = profile.user
-        user.is_active = True  # Активируем аккаунт
+        user.is_active = True
         user.save()
 
-        # Автоматически входим пользователя после подтверждения
-        login(request, user)
+        print(f"DEBUG: Обрабатываем пользователя {user.username}")
+        print(f"DEBUG: Баланс до обновления: {user.profile.balance}")
+
+        # Активируем все pending реферальные бонусы для этого пользователя
+        pending_transactions = Transaction.objects.filter(
+            user=user,
+            status='pending',
+            transaction_type='referral_bonus'
+        )
+
+        print(f"DEBUG: Найдено pending транзакций: {pending_transactions.count()}")
+
+        for transaction in pending_transactions:
+            print(f"DEBUG: Обновляем транзакцию {transaction.transaction_id} с суммой {transaction.amount}")
+            old_status = transaction.status
+            transaction.status = 'completed'
+            transaction.save()
+            print(f"DEBUG: Транзакция обновлена с {old_status} на {transaction.status}")
+
+        # Обновляем профиль из базы данных
+        user.profile.refresh_from_db()
+        print(f"DEBUG: Баланс после обновления: {user.profile.balance}")
+
+        # Если есть реферер, активируем и его бонус
+        if profile.referred_by:
+            print(f"DEBUG: Обрабатываем реферера {profile.referred_by.username}")
+            referrer_transactions = Transaction.objects.filter(
+                user=profile.referred_by,
+                status='pending',
+                transaction_type='referral_bonus',
+                comment__contains=user.username
+            )
+
+            print(f"DEBUG: Найдено транзакций реферера: {referrer_transactions.count()}")
+
+            for transaction in referrer_transactions:
+                print(f"DEBUG: Обновляем транзакцию реферера {transaction.transaction_id}")
+                transaction.status = 'completed'
+                transaction.save()
+
+        login(request, user, backend='accounts.backends.EmailOrUsernameModelBackend')
 
         messages.success(
             request,
-            "Ваш email успешно подтвержден! Добро пожаловать на UmbrellaBet."
+            "Ваш email успешно подтвержден! Бонусы начислены на ваш счет."
         )
         return redirect('accounts:profile')
 
     except UserProfile.DoesNotExist:
-        print("Profile not found with given confirmation code")
-        messages.error(
-            request,
-            "Неверный или устаревший код подтверждения. "
-            "Пожалуйста, зарегистрируйтесь снова."
-        )
+        messages.error(request, "Неверный код подтверждения.")
         return redirect('accounts:register')
 
 
-@login_required
 def resend_confirmation_view(request):
     """
     Повторно отправляет письмо с подтверждением email.
-    Доступно только для аутентифицированных пользователей.
+    Работает для неавторизованных пользователей.
     """
-    if request.user.profile.email_confirmed:
-        messages.warning(request, "Ваш email уже подтвержден")
-        return redirect('accounts:profile')
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        if not email:
+            messages.error(request, "Введите email")
+            return render(request, 'accounts/resend_confirmation.html')
 
-    # Генерируем новый код подтверждения
-    profile = request.user.profile
-    profile.email_confirmation_code = uuid.uuid4()
-    profile.save()
+        try:
+            user = User.objects.get(email=email)
+            if user.profile.email_confirmed:
+                messages.warning(request, "Этот email уже подтвержден")
+            else:
+                # Генерируем новый код подтверждения
+                profile = user.profile
+                profile.email_confirmation_code = uuid.uuid4()
+                profile.save()
 
-    try:
-        send_confirmation_email(request, request.user)
-        messages.info(request, "Письмо с подтверждением отправлено повторно")
-    except Exception as e:
-        messages.error(
-            request,
-            f"Ошибка отправки письма: {str(e)}. Пожалуйста, попробуйте позже."
-        )
+                # Отправляем письмо
+                profile.send_confirmation_email(request)
+                messages.success(request, f"Письмо с подтверждением отправлено на {email}")
 
-    return redirect('accounts:profile')
+        except User.DoesNotExist:
+            messages.error(request, "Пользователь с таким email не найден")
+        except Exception as e:
+            messages.error(request, f"Ошибка отправки письма: {str(e)}")
+
+        return redirect('accounts:login')
+
+    # GET запрос - показываем форму
+    return render(request, 'accounts/resend_confirmation.html')
 
 
 def login_view(request):
     # Если пользователь отправил данные формы (POST)
     if request.method == 'POST':
-        # Подставляем данные в стандартную форму авторизации Django
-        form = AuthenticationForm(data=request.POST)
+        # Используем нашу кастомную форму
+        form = EmailOrUsernameAuthenticationForm(data=request.POST, request=request)
         # Если данные корректны (логин и пароль верны)
         if form.is_valid():
             # Получаем объект пользователя
@@ -190,12 +224,22 @@ def login_view(request):
             login(request, user)
             # Перенаправляем на профиль
             return redirect('accounts:profile')
+        else:
+            # Проверяем, есть ли ошибка активации аккаунта
+            for error in form.non_field_errors():
+                if 'не активирован' in str(error):
+                    # Добавляем специальный тег для красивого отображения
+                    messages.error(request, str(error), extra_tags='email_not_confirmed')
+                    # Очищаем ошибки формы, чтобы не дублировать
+                    form._errors.clear()
+                    break
     else:
         # Если просто открыли страницу — создаём пустую форму авторизации
-        form = AuthenticationForm()
+        form = EmailOrUsernameAuthenticationForm()
 
     # Отображаем шаблон входа с формой
     return render(request, 'accounts/login.html', {'form': form})
+
 
 
 def logout_view(request):

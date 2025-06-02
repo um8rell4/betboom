@@ -242,3 +242,56 @@
     .copy-referral.copied {
         color: #10b981; /* Зеленый при копировании */
     }
+
+/* Стили для кнопки копирования ID транзакции */
+.copy-transaction-id {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    margin: 0 auto;
+}
+
+.copy-transaction-id:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: scale(1.1);
+}
+
+.copy-transaction-id.copied {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.copy-transaction-id svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Стили для статусов транзакций */
+.transaction-status.completed {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.transaction-status.pending {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.transaction-status.failed {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+/* Центрирование колонки действий */
+.bet-history th:last-child,
+.bet-history td:last-child {
+    text-align: center;
+    width: 80px;
+}

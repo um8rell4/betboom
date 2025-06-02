@@ -421,3 +421,17 @@
 .security-option svg {
     color: var(--accent);
 }
+
+/* Обновить стили сообщений */
+.message.warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    border: 1px solid #f59e0b;
+    color: #92400e;
+}
+
+.message.info {
+    background-color: rgba(59, 130, 246, 0.2);
+    border: 1px solid var(--accent);
+    color: #1e40af;
+}
+

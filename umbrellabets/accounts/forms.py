@@ -1,11 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm, AuthenticationForm
 from .models import UserProfile
-from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
-import uuid
+from django.db.models import Q
 
 
 class UserRegisterForm(UserCreationForm):
@@ -58,7 +58,7 @@ class UserRegisterForm(UserCreationForm):
         if commit:
             user.save()
 
-            # Получаем профиль (уже создан сигналом с кодом подтверждения)
+            # Получаем профиль (уже создан сигналом)
             profile = user.profile
 
             # Обработка реферального кода
@@ -67,11 +67,43 @@ class UserRegisterForm(UserCreationForm):
                 try:
                     referrer_profile = UserProfile.objects.get(referral_code=referral_code)
                     profile.referred_by = referrer_profile.user
-                    # Добавляем бонус рефереру (если метод существует)
-                    if hasattr(referrer_profile, 'add_referral_bonus'):
-                        referrer_profile.add_referral_bonus(user)
+
+                    # Создаем pending транзакции
+                    from .models import Transaction
+                    from decimal import Decimal
+
+                    # Транзакция для нового пользователя
+                    Transaction.objects.create(
+                        user=user,
+                        amount=Decimal('5000.00'),
+                        transaction_type='referral_bonus',
+                        status='pending',
+                        comment='Стартовый бонус за регистрацию'
+                    )
+
+                    # Транзакция для реферера
+                    Transaction.objects.create(
+                        user=referrer_profile.user,
+                        amount=Decimal('2500.00'),
+                        transaction_type='referral_bonus',
+                        status='pending',
+                        comment=f'Реферальный бонус за приглашение {user.username}'
+                    )
+
                 except UserProfile.DoesNotExist:
-                    pass  # Код уже проверен в clean_referral_code
+                    pass
+            else:
+                # Стартовый бонус без реферера
+                from .models import Transaction
+                from decimal import Decimal
+
+                Transaction.objects.create(
+                    user=user,
+                    amount=Decimal('5000.00'),
+                    transaction_type='referral_bonus',
+                    status='pending',
+                    comment='Стартовый бонус за регистрацию'
+                )
 
             profile.save()
 
@@ -170,3 +202,74 @@ class EmailConfirmationForm(forms.Form):
         except User.DoesNotExist:
             raise ValidationError("Пользователь с таким email не найден")
         return email
+
+
+class EmailOrUsernameAuthenticationForm(AuthenticationForm):
+    """
+    Кастомная форма входа, поддерживающая вход по email или username
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Изменяем label и placeholder для поля username
+        self.fields['username'].label = 'Email или имя пользователя'
+        self.fields['username'].widget.attrs.update({
+            'placeholder': 'Введите email или имя пользователя',
+            'class': 'form-control'
+        })
+        self.fields['password'].widget.attrs.update({
+            'placeholder': 'Введите пароль',
+            'class': 'form-control'
+        })
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username is not None and password:
+            # Сначала проверяем, существует ли пользователь
+            try:
+                user = User.objects.get(
+                    Q(username__iexact=username) | Q(email__iexact=username)
+                )
+
+                # Проверяем пароль
+                if user.check_password(password):
+                    # Пароль верный, но проверяем активацию
+                    if not user.is_active:
+                        if hasattr(user, 'profile') and not user.profile.email_confirmed:
+                            raise ValidationError(
+                                "Аккаунт не активирован. Проверьте email для подтверждения регистрации.",
+                                code='account_not_activated',
+                            )
+                        else:
+                            raise ValidationError(
+                                "Аккаунт заблокирован. Обратитесь в поддержку.",
+                                code='account_disabled',
+                            )
+
+                    # Все в порядке, аутентифицируем
+                    self.user_cache = authenticate(
+                        self.request,
+                        username=username,
+                        password=password
+                    )
+                    if self.user_cache is None:
+                        raise self.get_invalid_login_error()
+                    else:
+                        self.confirm_login_allowed(self.user_cache)
+                else:
+                    # Неверный пароль
+                    raise self.get_invalid_login_error()
+
+            except User.DoesNotExist:
+                # Пользователь не найден
+                raise self.get_invalid_login_error()
+
+        return self.cleaned_data
+
+    def get_invalid_login_error(self):
+        return ValidationError(
+            "Неверный email/имя пользователя или пароль.",
+            code='invalid_login',
+        )

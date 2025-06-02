@@ -118,6 +118,7 @@
                     <th>Дата</th>
                     <th>Статус</th>
                     <th>Комментарий</th>
+                    <th>ID</th>
                 </tr>
             </thead>
             <tbody>
@@ -126,17 +127,31 @@
                     <td>{{ transaction.get_transaction_type_display }}</td>
                     <td>{{ transaction.amount }} ₽</td>
                     <td>{{ transaction.created_at|date:"d.m.Y H:i" }}</td>
-                    <td>{{ transaction.get_status_display }}</td>
+                    <td class="transaction-status {{ transaction.status }}">
+                        {{ transaction.get_status_display }}
+                    </td>
                     <td>{{ transaction.comment|default:"" }}</td>
+                    <td>
+                        <button class="copy-referral" onclick="copyTransactionId('{{ transaction.transaction_id }}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Копировать
+                        </button>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" style="text-align: center;">Нет транзакций</td>
+                    <td colspan="6" style="text-align: center;">Нет транзакций</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+
+
 </div>
 {% block extra_js %}
 <script>
@@ -178,6 +193,55 @@ function copyReferralCode() {
         btn.classList.add('copied');
         setTimeout(() => {
             btn.textContent = 'Копировать';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+function copyTransactionId(transactionId) {
+    const btn = event.target.closest('.copy-referral');
+
+    // Современный API копирования
+    navigator.clipboard.writeText(transactionId).then(() => {
+        btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Скопировано!
+        `;
+        btn.classList.add('copied');
+
+        setTimeout(() => {
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Копировать
+            `;
+            btn.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Ошибка копирования: ', err);
+
+        // Fallback для старых браузеров
+        const textarea = document.createElement('textarea');
+        textarea.value = transactionId;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        btn.textContent = 'Скопировано!';
+        btn.classList.add('copied');
+
+        setTimeout(() => {
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Копировать
+            `;
             btn.classList.remove('copied');
         }, 2000);
     });

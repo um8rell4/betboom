@@ -18,14 +18,42 @@ class UserProfile(models.Model):
     Модель расширенного профиля пользователя.
     Содержит дополнительные поля к стандартной модели User Django.
     """
-    # Расширяем дефолтных пользователей, представленных Django
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(5000.00))  # стартовый баланс
-    referred_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='referrals')
-    referral_code = models.CharField(max_length=10, blank=True, unique=True) #Реферальный код каждого пользователя
-    is_admin = models.BooleanField(default=False)  # для будущих ролей
-    # Поля для подтверждения email
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile',
+        verbose_name="Пользователь"
+    )
+    avatar = models.ImageField(
+        upload_to=user_avatar_path,
+        null=True,
+        blank=True,
+        verbose_name="Аватар"
+    )
+    balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal(5000.00),
+        verbose_name="Баланс"
+    )
+    referred_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='referrals',
+        verbose_name="Пригласивший пользователь"
+    )
+    referral_code = models.CharField(
+        max_length=10,
+        blank=True,
+        unique=True,
+        verbose_name="Реферальный код"
+    )
+    is_admin = models.BooleanField(
+        default=False,
+        verbose_name="Администратор"
+    )
     email_confirmed = models.BooleanField(
         default=False,
         verbose_name="Email подтвержден"
@@ -36,6 +64,35 @@ class UserProfile(models.Model):
         null=True,
         verbose_name="Код подтверждения email"
     )
+    total_bets = models.IntegerField(
+        default=0,
+        verbose_name="Всего ставок"
+    )
+    won_bets = models.IntegerField(
+        default=0,
+        verbose_name="Выиграно ставок"
+    )
+    total_winnings = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name="Общая сумма выигрышей"
+    )
+
+    class Meta:
+        verbose_name = "Профиль пользователя"
+        verbose_name_plural = "Профили пользователей"
+
+    def __str__(self):
+        return f"Профиль {self.user.username}"
+
+
+    @property
+    def win_rate(self):
+        """Процент выигранных ставок"""
+        if self.total_bets == 0:
+            return 0
+        return round((self.won_bets / self.total_bets) * 100, 2)
 
     def save(self, *args, **kwargs):
         """
@@ -52,9 +109,6 @@ class UserProfile(models.Model):
             pass
 
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"Профиль {self.user.username}"
 
     def send_confirmation_email(self, request):
         """
@@ -127,11 +181,77 @@ class Transaction(models.Model):
         ('referral_bonus', 'Реферальный бонус'),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    comment = models.TextField(blank=True)
+    STATUS_CHOICES = (
+        ('pending', 'В обработке'),
+        ('completed', 'Завершена'),
+        ('failed', 'Отклонена'),
+    )
+
+    # Новое поле UUID
+    transaction_id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name="ID транзакции"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='transactions',
+        verbose_name="Пользователь"
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Сумма"
+    )
+    transaction_type = models.CharField(
+        max_length=20,
+        choices=TRANSACTION_TYPES,
+        verbose_name="Тип транзакции"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',  # Изменили default на pending
+        verbose_name="Статус"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания"
+    )
+    comment = models.TextField(
+        blank=True,
+        verbose_name="Комментарий"
+    )
+
+    class Meta:
+        verbose_name = "Транзакция"
+        verbose_name_plural = "Транзакции"
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.get_transaction_type_display()} {self.amount} для {self.user.username}"
+        return f"{self.transaction_id} - {self.get_transaction_type_display()} {self.amount}"
+
+    def update_user_balance(self, old_status=None):
+        """
+        Обновляет баланс пользователя в зависимости от статуса транзакции
+        """
+        profile = self.user.profile
+
+        # Если был старый статус, сначала откатываем его влияние
+        if old_status == 'completed' and self.status != 'completed':
+            if self.transaction_type in ['deposit', 'win', 'referral_bonus']:
+                profile.balance -= self.amount
+            elif self.transaction_type == 'withdrawal':
+                profile.balance += self.amount
+
+        # Применяем новый статус
+        if self.status == 'completed':
+            if self.transaction_type in ['deposit', 'win', 'referral_bonus']:
+                profile.balance += self.amount
+            elif self.transaction_type == 'withdrawal':
+                profile.balance -= self.amount
+
+        profile.save()

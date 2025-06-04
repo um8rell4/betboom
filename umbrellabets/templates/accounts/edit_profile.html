@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Редактирование профиля | CyberBet{% endblock %}
+{% block title %}Редактирование профиля | UmbrellaBet{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <h2 class="auth-title">Редактирование профиля</h2>
-    
-    <form method="post" enctype="multipart/form-data" class="auth-form">
+<div class="edit-profile-card">
+    <h2 class="edit-profile-title">Редактирование профиля <span class="emoji">🛠️</span></h2>
+
+    <form method="post" enctype="multipart/form-data" class="edit-profile-form">
         {% csrf_token %}
-        
+
         <div class="avatar-edit">
             <div class="avatar-preview">
                 {% if user.profile.avatar %}
@@ -16,38 +16,38 @@
                 {% else %}
                     <div class="default-avatar">{{ user.username|first|upper }}</div>
                 {% endif %}
+                <label for="{{ profile_form.avatar.id_for_label }}" class="avatar-upload-btn" title="Загрузить аватар">
+                    <span>📸</span>
+                </label>
             </div>
             {{ profile_form.avatar }}
-            <label for="{{ profile_form.avatar.id_for_label }}" class="avatar-upload-button">
-                Выбрать изображение
-            </label>
         </div>
-        
+
         <div class="form-group">
             <label for="{{ user_form.email.id_for_label }}">Email</label>
             {{ user_form.email }}
             {{ user_form.email.errors }}
         </div>
-        
+
         <div class="form-group">
             <label for="{{ user_form.first_name.id_for_label }}">Имя</label>
             {{ user_form.first_name }}
             {{ user_form.first_name.errors }}
         </div>
-        
+
         <div class="form-group">
             <label for="{{ user_form.last_name.id_for_label }}">Фамилия</label>
             {{ user_form.last_name }}
             {{ user_form.last_name.errors }}
         </div>
-        
-        <button type="submit" class="auth-submit-button">Сохранить изменения</button>
+
+        <button type="submit" class="profile-save-btn">💾 Сохранить изменения</button>
     </form>
 
     <div class="profile-section">
         <div class="security-options">
             <a href="{% url 'accounts:password_change' %}" class="security-option">
-                <span>Изменить пароль</span>
+                <span>🔑 Изменить пароль</span>
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
@@ -59,75 +59,174 @@
         <a href="{% url 'accounts:profile' %}">← Вернуться в профиль</a>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .avatar-edit {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .avatar-preview {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin: 0 auto 1rem;
-        background-color: var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-
-    .avatar-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .default-avatar {
-        font-size: 3rem;
-        color: white;
-        font-weight: bold;
-    }
-
-    #id_avatar {
-        display: none;
-    }
-
-    .avatar-upload-button {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        background-color: var(--accent);
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .avatar-upload-button:hover {
-        background-color: var(--secondary);
-    }
-
-    .auth-submit-button {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: var(--success);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 1rem;
-        transition: background-color 0.3s;
-    }
-
-    .auth-submit-button:hover {
-        background-color: #059669;
-    }
+.edit-profile-card {
+    max-width: 480px;
+    margin: 2.5rem auto;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 6px 32px rgba(59,130,246,0.13);
+    padding: 2.5rem 2rem 2rem 2rem;
+    position: relative;
+}
+.edit-profile-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3b82f6;
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+.emoji {
+    font-size: 2rem;
+}
+.edit-profile-form .form-group {
+    margin-bottom: 1.2rem;
+}
+.edit-profile-form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.edit-profile-form input {
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: 8px;
+    border: 1.5px solid #dbeafe;
+    font-size: 1.05rem;
+    background: #f8fafc;
+    margin-bottom: 0.3rem;
+    transition: border 0.2s;
+}
+.edit-profile-form input:focus {
+    border: 1.5px solid #3b82f6;
+    outline: none;
+}
+.avatar-edit {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #3b82f6 60%, #f59e42 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.13);
+    border: 5px solid #fff;
+}
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.default-avatar {
+    font-size: 3.2rem;
+    color: #fff;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+}
+#id_avatar {
+    display: none;
+}
+.avatar-upload-btn {
+    position: absolute;
+    bottom: 7px;
+    right: 7px;
+    background: linear-gradient(90deg, #f59e42, #3b82f6);
+    color: #fff;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.10);
+    transition: background 0.2s, transform 0.2s;
+}
+.avatar-upload-btn:hover {
+    background: linear-gradient(90deg, #a21caf, #3b82f6);
+    transform: scale(1.08);
+}
+.profile-save-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.profile-save-btn:hover {
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    transform: scale(1.04);
+}
+.security-options {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+.security-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #3b82f6;
+    font-weight: 700;
+    background: #e0e7ff;
+    border-radius: 8px;
+    padding: 0.7rem 1.5rem;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    margin-bottom: 1.2rem;
+}
+.security-option:hover {
+    background: #a21caf;
+    color: #fff;
+    transform: scale(1.04);
+}
+.auth-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 1rem;
+}
+.auth-link a {
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.auth-link a:hover {
+    color: #a21caf;
+}
+@media (max-width: 600px) {
+    .edit-profile-card { padding: 1rem; }
+    .edit-profile-title { font-size: 1.3rem; }
+}
 </style>
 {% endblock %}
 
@@ -136,7 +235,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const avatarInput = document.getElementById('{{ profile_form.avatar.id_for_label }}');
     const avatarPreview = document.querySelector('.avatar-preview');
-    
     avatarInput.addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
@@ -146,7 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 while (avatarPreview.firstChild) {
                     avatarPreview.removeChild(avatarPreview.firstChild);
                 }
-                
                 // Создаем новое изображение
                 const img = document.createElement('img');
                 img.src = e.target.result;

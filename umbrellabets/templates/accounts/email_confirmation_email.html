@@ -3,18 +3,107 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Подтверждение email на UmbrellaBet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение email | UmbrellaBet</title>
 </head>
-<body>
-    <h3>Подтвердите ваш email</h3>
-    <p>Здравствуйте, {{ user.username }}!</p>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%); color: #22223b;">
+    <div style="max-width: 500px; margin: 2rem auto; background: #fff; border-radius: 20px; box-shadow: 0 6px 32px rgba(59,130,246,0.12); overflow: hidden;">
 
-    <p>Для завершения регистрации на CyberBet перейдите по ссылке:</p>
-    <p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
+        <!-- Header -->
+        <div style="background: linear-gradient(90deg, #3b82f6 60%, #f59e42 100%); color: #fff; padding: 2rem 1.5rem; text-align: center;">
+            <h1 style="margin: 0; font-family: 'Montserrat', Arial, sans-serif; font-size: 1.8rem; font-weight: 700; letter-spacing: 1px;">
+                🎮 UmbrellaBet
+            </h1>
+            <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 0.9;">
+                Подтверждение регистрации
+            </p>
+        </div>
 
-    <p>Если вы не регистрировались на нашем сайте, проигнорируйте это письмо.</p>
+        <!-- Content -->
+        <div style="padding: 2rem 1.5rem;">
+            <h2 style="color: #3b82f6; font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem 0; text-align: center;">
+                Добро пожаловать! <span style="font-size: 1.3rem;">🎉</span>
+            </h2>
 
-    <p>С уважением,<br>Команда CyberBet</p>
+            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1rem;">
+                Привет, <strong style="color: #3b82f6;">{{ user.username }}</strong>!
+            </p>
+
+            <p style="font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; color: #64748b;">
+                Спасибо за регистрацию на <strong>UmbrellaBet</strong>! Чтобы завершить регистрацию и получить стартовый бонус, подтвердите свой email.
+            </p>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 2rem 0;">
+                <a href="{{ confirm_url }}"
+                   style="display: inline-block; background: linear-gradient(90deg, #3b82f6, #f59e42); color: #fff; text-decoration: none; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 16px rgba(59,130,246,0.2); transition: all 0.3s;">
+                    🚀 Подтвердить email
+                </a>
+            </div>
+
+            <!-- Fallback link -->
+            <div style="background: #f8fafc; border-radius: 8px; padding: 1rem; margin: 1.5rem 0;">
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #64748b;">
+                    Если кнопка не работает, скопируйте ссылку в адресную строку браузера:
+                </p>
+                <p style="margin: 0; word-break: break-all; font-size: 0.85rem; color: #3b82f6;">
+                    {{ confirm_url }}
+                </p>
+            </div>
+
+            <!-- Benefits -->
+            <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;">
+                <h3 style="margin: 0 0 1rem 0; color: #0369a1; font-size: 1.1rem; font-weight: 700;">
+                    🎁 Что вас ждет после подтверждения:
+                </h3>
+                <ul style="margin: 0; padding-left: 1.2rem; color: #0369a1;">
+                    <li style="margin-bottom: 0.5rem;">Стартовый бонус на счет</li>
+                    <li style="margin-bottom: 0.5rem;">Доступ ко всем функциям платформы</li>
+                    <li style="margin-bottom: 0.5rem;">Участие в турнирах и рейтингах</li>
+                    <li>Возможность приглашать друзей</li>
+                </ul>
+            </div>
+
+            <!-- Warning -->
+            <div style="background: #fff7e6; border: 1px solid #f59e42; border-radius: 8px; padding: 1rem; margin: 1.5rem 0;">
+                <p style="margin: 0; font-size: 0.9rem; color: #a16207;">
+                    <span style="font-size: 1.1rem;">⚠️</span>
+                    Если вы не регистрировались на UmbrellaBet, просто проигнорируйте это письмо.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f8fafc; padding: 1.5rem; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 0.5rem 0; color: #3b82f6; font-weight: 600;">
+                С уважением,<br>
+                Команда UmbrellaBet <span style="font-size: 1.1rem;">🎮</span>
+            </p>
+            <p style="margin: 0; font-size: 0.8rem; color: #94a3b8;">
+                © 2025 UmbrellaBet. Образовательная платформа для школьников.
+            </p>
+        </div>
+    </div>
+
+    <!-- Mobile styles -->
+    <style>
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 1rem auto !important;
+                border-radius: 16px !important;
+            }
+            .email-header {
+                padding: 1.5rem 1rem !important;
+            }
+            .email-content {
+                padding: 1.5rem 1rem !important;
+            }
+            .cta-button {
+                padding: 0.8rem 2rem !important;
+                font-size: 1rem !important;
+            }
+        }
+    </style>
 </body>
 </html>
 {% endautoescape %}

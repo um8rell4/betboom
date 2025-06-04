@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Повторная отправка письма | CyberBet{% endblock %}
+{% block title %}Повторная отправка письма | UmbrellaBet{% endblock %}
 
 {% block content %}
 <div class="auth-container">
-    <h2 class="auth-title">Повторная отправка письма подтверждения</h2>
+    <h2 class="auth-title">Повторная отправка письма <span class="emoji">📧</span></h2>
 
     <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem;">
-        Введите email, указанный при регистрации
+        Введите email, указанный при регистрации.<br>
+        Мы отправим вам письмо для подтверждения аккаунта.
     </p>
 
     <form method="post" class="auth-form">
@@ -23,11 +24,106 @@
                    class="form-control">
         </div>
 
-        <button type="submit">Отправить письмо</button>
+        <button type="submit" class="auth-btn"><span style="font-size:1.2rem;">🔄</span> Отправить письмо</button>
     </form>
 
     <div class="auth-link">
         <a href="{% url 'accounts:login' %}">← Вернуться к входу</a>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%);
+}
+.auth-container {
+    max-width: 420px;
+    margin: 3rem auto;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 6px 32px rgba(59,130,246,0.10);
+    padding: 2.5rem 2rem 2rem 2rem;
+}
+.auth-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3b82f6;
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+.emoji {
+    font-size: 2rem;
+}
+.auth-form .form-group {
+    margin-bottom: 1.2rem;
+}
+.auth-form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.auth-form input {
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: 8px;
+    border: 1.5px solid #dbeafe;
+    font-size: 1.05rem;
+    background: #f8fafc;
+    margin-bottom: 0.3rem;
+    transition: border 0.2s;
+}
+.auth-form input:focus {
+    border: 1.5px solid #3b82f6;
+    outline: none;
+}
+.auth-btn {
+    background: linear-gradient(90deg, #3b82f6, #f59e42);
+    color: #fff;
+    border-radius: 8px;
+    padding: 0.7rem 2rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    transition: background 0.2s, transform 0.2s;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.auth-btn:hover {
+    background: linear-gradient(90deg, #a21caf, #3b82f6);
+    transform: scale(1.04);
+}
+.auth-link {
+    text-align: center;
+    margin-top: 1.2rem;
+    font-size: 1rem;
+}
+.auth-link a {
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.auth-link a:hover {
+    color: #a21caf;
+}
+@media (max-width: 600px) {
+    .auth-container { padding: 1rem; }
+    .auth-title { font-size: 1.3rem; }
+}
+</style>
 {% endblock %}

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 import environ
+from decouple import config
 
 # Инициализация environ
 env = environ.Env(
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     'bets',
     'core',
     'events',
+    'matches',
 ]
 
 MIDDLEWARE = [
@@ -170,6 +172,7 @@ EMAIL_TIMEOUT = 10  # Таймаут соединения
 EMAIL_USE_TLS = False  # Используйте либо SSL, либо TLS
 DEFAULT_CHARSET = 'utf-8'
 
+PANDASCORE_API_KEY = config('PANDASCORE_API_KEY')
 
 # Настройки для ставок
 BET_SETTINGS = {

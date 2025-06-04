@@ -276,8 +276,22 @@
 
 .live-matches-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+}
+
+/* Если live матч только один, то на всю ширину */
+.live-matches-grid:has(.live-match-card:only-child) {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Альтернативный способ для браузеров без поддержки :has() */
+.live-matches-grid.single-match {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .live-match-card {

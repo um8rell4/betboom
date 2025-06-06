@@ -5,105 +5,379 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Подтверждение email | UmbrellaBet</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%); color: #22223b;">
-    <div style="max-width: 500px; margin: 2rem auto; background: #fff; border-radius: 20px; box-shadow: 0 6px 32px rgba(59,130,246,0.12); overflow: hidden;">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #0d1421 0%, #16213e 50%, #1a1a2e 100%);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: linear-gradient(145deg, #16213e 0%, #0f3460 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid #2d3748;
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 50%, #e94560 100%);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .email-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e94560, #f5a623, #e94560);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: "⚡";
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #e94560, #f5a623, #e94560);
+            background-size: 200% 200%;
+            animation: gradient-shift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header-subtitle {
+            color: #b8c5d6;
+            font-size: 1.1rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .email-content {
+            padding: 2rem;
+        }
+
+        .welcome-title {
+            color: #ffffff;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 1.5rem 0;
+            text-align: center;
+        }
+
+        .greeting {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .greeting strong {
+            color: #e94560;
+        }
+
+        .message-text {
+            color: #b8c5d6;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .cta-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #e94560, #f5a623);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 16px rgba(233,69,96,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: linear-gradient(135deg, #f5a623, #e94560);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233,69,96,0.4);
+        }
+
+        .fallback-section {
+            background: #1e2a3a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .fallback-text {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            color: #8892a6;
+        }
+
+        .fallback-link {
+            margin: 0;
+            word-break: break-all;
+            font-size: 0.85rem;
+            color: #e94560;
+        }
+
+        .benefits-section {
+            background: linear-gradient(135deg, rgba(233,69,96,0.1) 0%, rgba(245,166,35,0.1) 100%);
+            border: 1px solid rgba(233,69,96,0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .benefits-title {
+            margin: 0 0 1rem 0;
+            color: #e94560;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .benefits-list {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: #b8c5d6;
+        }
+
+        .benefits-list li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .benefits-list li::marker {
+            color: #e94560;
+        }
+
+        .warning-section {
+            background: rgba(245,158,66,0.1);
+            border: 1px solid #f5a623;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .warning-icon {
+            font-size: 1.5rem;
+            color: #f5a623;
+            flex-shrink: 0;
+        }
+
+        .warning-text {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #f5a623;
+        }
+
+        .email-footer {
+            background: #0d1421;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid #2d3748;
+        }
+
+        .footer-company {
+            margin: 0 0 1rem 0;
+            color: #b8c5d6;
+            font-weight: 600;
+        }
+
+        .footer-copyright {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #8892a6;
+        }
+
+        .social-links {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: #1e2a3a;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #8892a6;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: #e94560;
+            color: #ffffff;
+        }
+
+        /* Mobile Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 1rem !important;
+                border-radius: 16px !important;
+            }
+
+            .email-header,
+            .email-content,
+            .email-footer {
+                padding: 1.5rem !important;
+            }
+
+            .logo {
+                font-size: 1.8rem !important;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem !important;
+            }
+
+            .cta-button {
+                padding: 1rem 2rem !important;
+                font-size: 1rem !important;
+            }
+
+            .benefits-section {
+                padding: 1rem !important;
+            }
+
+            .warning-section {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
         <!-- Header -->
-        <div style="background: linear-gradient(90deg, #3b82f6 60%, #f59e42 100%); color: #fff; padding: 2rem 1.5rem; text-align: center;">
-            <h1 style="margin: 0; font-family: 'Montserrat', Arial, sans-serif; font-size: 1.8rem; font-weight: 700; letter-spacing: 1px;">
-                🎮 UmbrellaBet
-            </h1>
-            <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 0.9;">
-                Подтверждение регистрации
-            </p>
+        <div class="email-header">
+            <div class="logo">UmbrellaBet</div>
+            <div class="header-subtitle">Подтверждение регистрации</div>
         </div>
 
         <!-- Content -->
-        <div style="padding: 2rem 1.5rem;">
-            <h2 style="color: #3b82f6; font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem 0; text-align: center;">
-                Добро пожаловать! <span style="font-size: 1.3rem;">🎉</span>
-            </h2>
+        <div class="email-content">
+            <div class="welcome-title">
+                Добро пожаловать! 🎉
+            </div>
 
-            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1rem;">
-                Привет, <strong style="color: #3b82f6;">{{ user.username }}</strong>!
-            </p>
+            <div class="greeting">
+                Привет, <strong>{{ user.username }}</strong>! 👋
+            </div>
 
-            <p style="font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; color: #64748b;">
-                Спасибо за регистрацию на <strong>UmbrellaBet</strong>! Чтобы завершить регистрацию и получить стартовый бонус, подтвердите свой email.
-            </p>
+            <div class="message-text">
+                Спасибо за регистрацию на <strong>UmbrellaBet</strong>! Мы рады видеть тебя в нашем сообществе.
+                Чтобы завершить регистрацию и получить доступ ко всем функциям, подтверди свой email адрес.
+            </div>
 
             <!-- CTA Button -->
-            <div style="text-align: center; margin: 2rem 0;">
-                <a href="{{ confirm_url }}"
-                   style="display: inline-block; background: linear-gradient(90deg, #3b82f6, #f59e42); color: #fff; text-decoration: none; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 16px rgba(59,130,246,0.2); transition: all 0.3s;">
+            <div class="cta-container">
+                <a href="{{ confirm_url }}" class="cta-button">
                     🚀 Подтвердить email
                 </a>
             </div>
 
-            <!-- Fallback link -->
-            <div style="background: #f8fafc; border-radius: 8px; padding: 1rem; margin: 1.5rem 0;">
-                <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #64748b;">
-                    Если кнопка не работает, скопируйте ссылку в адресную строку браузера:
-                </p>
-                <p style="margin: 0; word-break: break-all; font-size: 0.85rem; color: #3b82f6;">
+            <!-- Fallback Link -->
+            <div class="fallback-section">
+                <div class="fallback-text">
+                    Если кнопка не работает, скопируй и вставь эту ссылку в адресную строку браузера:
+                </div>
+                <div class="fallback-link">
                     {{ confirm_url }}
-                </p>
+                </div>
             </div>
 
             <!-- Benefits -->
-            <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;">
-                <h3 style="margin: 0 0 1rem 0; color: #0369a1; font-size: 1.1rem; font-weight: 700;">
-                    🎁 Что вас ждет после подтверждения:
-                </h3>
-                <ul style="margin: 0; padding-left: 1.2rem; color: #0369a1;">
-                    <li style="margin-bottom: 0.5rem;">Стартовый бонус на счет</li>
-                    <li style="margin-bottom: 0.5rem;">Доступ ко всем функциям платформы</li>
-                    <li style="margin-bottom: 0.5rem;">Участие в турнирах и рейтингах</li>
-                    <li>Возможность приглашать друзей</li>
+            <div class="benefits-section">
+                <div class="benefits-title">
+                    🎁 Что тебя ждет после подтверждения:
+                </div>
+                <ul class="benefits-list">
+                    <li>Стартовый бонус 5000 ₽ на игровой счет</li>
+                    <li>Доступ ко всем матчам и турнирам</li>
+                    <li>Участие в рейтинге лучших игроков</li>
+                    <li>Возможность приглашать друзей и получать бонусы</li>
+                    <li>Эксклюзивные промо-акции и конкурсы</li>
                 </ul>
             </div>
 
             <!-- Warning -->
-            <div style="background: #fff7e6; border: 1px solid #f59e42; border-radius: 8px; padding: 1rem; margin: 1.5rem 0;">
-                <p style="margin: 0; font-size: 0.9rem; color: #a16207;">
-                    <span style="font-size: 1.1rem;">⚠️</span>
-                    Если вы не регистрировались на UmbrellaBet, просто проигнорируйте это письмо.
-                </p>
+            <div class="warning-section">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    Если ты не регистрировался на UmbrellaBet, просто проигнорируй это письмо.
+                    Твои данные в безопасности.
+                </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div style="background: #f8fafc; padding: 1.5rem; text-align: center; border-top: 1px solid #e2e8f0;">
-            <p style="margin: 0 0 0.5rem 0; color: #3b82f6; font-weight: 600;">
+        <div class="email-footer">
+            <div class="footer-company">
                 С уважением,<br>
-                Команда UmbrellaBet <span style="font-size: 1.1rem;">🎮</span>
-            </p>
-            <p style="margin: 0; font-size: 0.8rem; color: #94a3b8;">
-                © 2025 UmbrellaBet. Образовательная платформа для школьников.
-            </p>
+                Команда UmbrellaBet 🎮
+            </div>
+
+            <div class="social-links">
+                <a href="#" class="social-link">📧</a>
+                <a href="#" class="social-link">💬</a>
+                <a href="#" class="social-link">🌐</a>
+            </div>
+
+            <div class="footer-copyright">
+                © 2025 UmbrellaBet. Образовательная платформа для изучения ставок на киберспорт.
+            </div>
         </div>
     </div>
-
-    <!-- Mobile styles -->
-    <style>
-        @media only screen and (max-width: 600px) {
-            .email-container {
-                margin: 1rem auto !important;
-                border-radius: 16px !important;
-            }
-            .email-header {
-                padding: 1.5rem 1rem !important;
-            }
-            .email-content {
-                padding: 1.5rem 1rem !important;
-            }
-            .cta-button {
-                padding: 0.8rem 2rem !important;
-                font-size: 1rem !important;
-            }
-        }
-    </style>
 </body>
 </html>
 {% endautoescape %}

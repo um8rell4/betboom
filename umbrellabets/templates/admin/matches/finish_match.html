@@ -1,0 +1,460 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Завершить матч | UmbrellaBet Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary-dark: #1a1a2e;
+        --primary-blue: #0f3460;
+        --accent-orange: #e94560;
+        --accent-yellow: #f5a623;
+        --gradient-main: linear-gradient(135deg, #0f3460 0%, #1a1a2e 50%, #e94560 100%);
+        --gradient-card: linear-gradient(145deg, #16213e 0%, #0f3460 100%);
+        --text-primary: #ffffff;
+        --text-secondary: #b8c5d6;
+        --text-muted: #8892a6;
+        --bg-dark: #0d1421;
+        --bg-card: #16213e;
+        --bg-input: #1e2a3a;
+        --border-color: #2d3748;
+        --success: #48bb78;
+        --warning: #ed8936;
+        --error: #f56565;
+    }
+
+    body {
+        background: var(--bg-dark) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .finish-match-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--gradient-card);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 2rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .match-info-card {
+        background: var(--bg-card);
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+        text-align: center;
+    }
+
+    .match-teams {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .vs-separator {
+        color: var(--accent-orange);
+        font-size: 1.2rem;
+    }
+
+    .match-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .detail-item {
+        background: var(--bg-input);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .detail-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .stats-card {
+        background: var(--bg-card);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .stats-title {
+        color: var(--text-primary);
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .teams-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .team-stats {
+        background: var(--bg-input);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+
+    .team-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+    }
+
+    .stat-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .total-stats {
+        background: var(--bg-input);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        text-align: center;
+    }
+
+    .form-card {
+        background: var(--bg-card);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        color: var(--text-primary);
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .result-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .result-option {
+        position: relative;
+    }
+
+    .result-option input[type="radio"] {
+        display: none;
+    }
+
+    .result-label {
+        display: block;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .home-option {
+        background: linear-gradient(135deg, var(--success), #38a169);
+        color: white;
+    }
+
+    .away-option {
+        background: linear-gradient(135deg, var(--primary-blue), #3182ce);
+        color: white;
+    }
+
+    .cancel-option {
+        background: linear-gradient(135deg, var(--error), #e53e3e);
+        color: white;
+    }
+
+    .result-option input:checked + .result-label {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(233,69,96,0.3);
+        border-color: var(--accent-orange);
+    }
+
+    .submit-container {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));
+        color: white;
+        padding: 1.2rem 2.5rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(233,69,96,0.4);
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .back-link a {
+        color: var(--accent-orange);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+        color: var(--accent-yellow);
+    }
+
+    /* Warning Notice */
+    .warning-notice {
+        background: rgba(237,137,54,0.1);
+        border: 1px solid var(--warning);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .warning-icon {
+        color: var(--warning);
+        font-size: 1.5rem;
+    }
+
+    .warning-text {
+        color: var(--warning);
+        font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .finish-match-container {
+            margin: 1rem;
+            padding: 1rem;
+        }
+
+        .teams-stats {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .result-options {
+            grid-template-columns: 1fr;
+        }
+
+        .match-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="finish-match-container">
+    <h1 class="page-title">🏁 Завершить матч</h1>
+
+    <!-- Match Info -->
+    <div class="match-info-card">
+        <div class="match-teams">
+            {{ match.home_team }}
+            <span class="vs-separator">VS</span>
+            {{ match.away_team }}
+        </div>
+
+        <div class="match-details">
+            <div class="detail-item">
+                <div class="detail-label">Время начала</div>
+                <div class="detail-value">{{ match.commence_time|date:"d.m.Y H:i" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Турнир</div>
+                <div class="detail-value">{{ match.sport.title }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Текущий статус</div>
+                <div class="detail-value">{{ match.get_status_display }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Notice -->
+    <div class="warning-notice">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-text">
+            <strong>Внимание!</strong> После завершения матча все ставки будут автоматически рассчитаны.
+            Это действие нельзя отменить.
+        </div>
+    </div>
+
+    <!-- Betting Statistics -->
+    <div class="stats-card">
+        <h3 class="stats-title">📊 Статистика ставок</h3>
+
+        <div class="teams-stats">
+            <div class="team-stats">
+                <div class="team-name">🏠 {{ match.home_team }}</div>
+                <div class="stat-row">
+                    <span class="stat-label">Количество ставок:</span>
+                    <span class="stat-value">{{ home_bets_count }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Сумма ставок:</span>
+                    <span class="stat-value">{{ home_total_amount }} ₽</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Потенциальная выплата:</span>
+                    <span class="stat-value">{{ home_potential_payout }} ₽</span>
+                </div>
+            </div>
+
+            <div class="team-stats">
+                <div class="team-name">✈️ {{ match.away_team }}</div>
+                <div class="stat-row">
+                    <span class="stat-label">Количество ставок:</span>
+                    <span class="stat-value">{{ away_bets_count }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Сумма ставок:</span>
+                    <span class="stat-value">{{ away_total_amount }} ₽</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Потенциальная выплата:</span>
+                    <span class="stat-value">{{ away_potential_payout }} ₽</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="total-stats">
+            <strong>Всего активных ставок: {{ pending_bets_count }}</strong>
+        </div>
+    </div>
+
+    <!-- Result Selection Form -->
+    <form method="post" class="form-card">
+        {% csrf_token %}
+        <h3 class="form-title">Выберите результат матча:</h3>
+
+        <div class="result-options">
+            <div class="result-option">
+                <input type="radio" name="winner" value="home" id="home-win" required>
+                <label for="home-win" class="result-label home-option">
+                    🏠 Победа<br>{{ match.home_team }}
+                </label>
+            </div>
+
+            <div class="result-option">
+                <input type="radio" name="winner" value="away" id="away-win" required>
+                <label for="away-win" class="result-label away-option">
+                    ✈️ Победа<br>{{ match.away_team }}
+                </label>
+            </div>
+
+            <div class="result-option">
+                <input type="radio" name="winner" value="cancelled" id="match-cancel" required>
+                <label for="match-cancel" class="result-label cancel-option">
+                    ❌ Отменить<br>матч
+                </label>
+            </div>
+        </div>
+
+        <div class="submit-container">
+            <button type="submit" class="submit-btn">
+                🏁 Завершить матч и рассчитать ставки
+            </button>
+        </div>
+    </form>
+
+    <div class="back-link">
+        <a href="{% url 'admin:matches_match_changelist' %}">← Назад к списку матчей</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = document.querySelector('.submit-btn');
+
+    form.addEventListener('submit', function() {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обработка...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

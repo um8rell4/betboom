@@ -1,0 +1,513 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ match.home_team }} vs {{ match.away_team }} | UmbrellaBet{% endblock %}
+
+{% block content %}
+<div class="betting-container">
+    <!-- Back Button -->
+    <a href="{% url 'matches:matches_list' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Все матчи
+    </a>
+
+    <!-- Match Header -->
+    <div class="match-header">
+        <div class="teams-container">
+            <div class="team home-team">
+                <span class="team-name">{{ match.home_team }}</span>
+            </div>
+
+            <div class="match-info">
+                <div class="match-tournament">
+                    <i class="fas fa-trophy"></i>
+                    {{ match.sport.title }}
+                </div>
+                <div class="match-time-status">
+                    <span class="match-time">{{ match.commence_time|date:"d.m.Y H:i" }}</span>
+                    <span class="match-status {{ match.status }}">{{ match.get_status_display }}</span>
+                </div>
+            </div>
+
+            <div class="team away-team">
+                <span class="team-name">{{ match.away_team }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Betting Widget -->
+    <div class="betting-widget">
+        {% if user.is_authenticated and can_bet %}
+        <form method="post" action="{% url 'matches:place_bet' match.id %}" id="bet-form">
+            {% csrf_token %}
+
+            <div class="odds-selector">
+                {% for odds in match.odds.all %}
+                <div class="odds-option">
+                    <input type="radio" name="outcome" id="odds-{{ odds.id }}"
+                           data-odds="{{ odds.price }}" value="{{ odds.outcome }}" required>
+                    <label for="odds-{{ odds.id }}">
+                        <span class="outcome-type">{{ odds.get_outcome_display }}</span>
+                        <span class="odds-value">{{ odds.price }}</span>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="betting-controls">
+                <div class="amount-selector">
+                    <input type="number" name="amount" id="bet-amount" min="10" max="{{ user.profile.balance }}"
+                           placeholder="Сумма ставки" required>
+                    <div class="balance-info">
+                        Баланс: <span class="balance-amount">{{ user.profile.balance }}</span> ₽
+                    </div>
+                    <div class="quick-amounts">
+                        <button type="button" class="quick-amount" data-amount="100">100</button>
+                        <button type="button" class="quick-amount" data-amount="500">500</button>
+                        <button type="button" class="quick-amount" data-amount="1000">1000</button>
+                    </div>
+                </div>
+
+                <div class="potential-win">
+                    <span>Возможный выигрыш:</span>
+                    <span id="potential-win-amount">0 ₽</span>
+                </div>
+
+                <button type="submit" class="place-bet-btn">
+                    Сделать ставку
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+
+        {% elif not user.is_authenticated %}
+        <div class="login-prompt">
+            <h3>🔐 Войдите, чтобы делать ставки</h3>
+            <p>Зарегистрируйтесь или войдите в свой аккаунт</p>
+            <div class="auth-buttons">
+                <a href="{% url 'accounts:login' %}" class="btn primary">Войти</a>
+                <a href="{% url 'accounts:register' %}" class="btn secondary">Регистрация</a>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="betting-closed">
+            <h3>⏰ Ставки закрыты</h3>
+            <p>Матч уже начался или завершился</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+    <!-- Match Statistics -->
+    <div class="match-stats">
+        <div class="stats-card">
+            <h3>Статистика ставок</h3>
+            <div class="stats-progress">
+                <div class="progress-bar home" style="width: {{ home_percentage }}%">
+                    <span>{{ home_percentage }}%</span>
+                </div>
+                <div class="progress-bar away" style="width: {{ away_percentage }}%">
+                    <span>{{ away_percentage }}%</span>
+                </div>
+            </div>
+            <div class="stats-labels">
+                <span>{{ match.home_team }}</span>
+                <span>{{ match.away_team }}</span>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <h3>История встреч</h3>
+            <div class="history-grid">
+<!--                <div class="history-item win">П</div>-->
+<!--                <div class="history-item loss">П</div>-->
+<!--                <div class="history-item win">П</div>-->
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="additional-info">
+        <div class="info-card">
+            <h4><i class="fas fa-info-circle"></i> Детали матча</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span>Статус:</span>
+                    <span class="status-badge {{ match.status }}">{{ match.get_status_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Начало:</span>
+                    <span>{{ match.commence_time|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span>Турнир:</span>
+                    <span>{{ match.sport.title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.betting-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: var(--bg-dark);
+}
+
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    transition: color 0.3s;
+}
+
+.back-link:hover {
+    color: var(--accent-orange);
+}
+
+.match-header {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.teams-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 2rem;
+}
+
+.team {
+    text-align: center;
+}
+
+.team-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.team-rating {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.match-info {
+    text-align: center;
+}
+
+.match-tournament {
+    font-size: 1.2rem;
+    color: var(--accent-orange);
+    margin-bottom: 0.5rem;
+}
+
+.match-time-status {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.betting-widget {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.odds-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.odds-option input[type="radio"] {
+    display: none;
+}
+
+.odds-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: var(--bg-input);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+}
+
+.odds-option input:checked + label {
+    border-color: var(--accent-orange);
+    background: rgba(233,69,96,0.1);
+    transform: translateY(-2px);
+}
+
+.outcome-type {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.odds-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-orange);
+}
+
+.bookmaker-logo img {
+    height: 30px;
+    margin-top: 1rem;
+}
+
+.betting-controls {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.amount-selector {
+    position: relative;
+}
+
+#bet-amount {
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.quick-amounts {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.quick-amount {
+    padding: 0.5rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.quick-amount:hover {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+}
+
+.potential-win {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-card);
+    border-radius: 12px;
+    font-size: 1.1rem;
+}
+
+.place-bet-btn {
+    width: 100%;
+    padding: 1.25rem;
+    background: var(--accent-orange);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.place-bet-btn:hover {
+    transform: translateY(-2px);
+}
+
+.match-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: var(--gradient-card);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.stats-progress {
+    height: 40px;
+    display: flex;
+    margin: 1rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: width 0.5s;
+}
+
+.progress-bar.home {
+    background: linear-gradient(90deg, #0f3460, #1a1a2e);
+}
+
+.progress-bar.away {
+    background: linear-gradient(90deg, #1a1a2e, #e94560);
+}
+
+.stats-labels {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+}
+
+.history-grid {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.history-item {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.history-item.win {
+    background: rgba(72,187,120,0.1);
+    color: var(--success);
+}
+
+.history-item.loss {
+    background: rgba(245,101,101,0.1);
+    color: var(--error);
+}
+
+.additional-info {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.info-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-upcoming {
+    background: rgba(16,185,129,0.1);
+    color: var(--success);
+}
+
+.status-live {
+    background: rgba(233,69,96,0.1);
+    color: var(--accent-orange);
+}
+
+@media (max-width: 768px) {
+    .teams-container {
+        grid-template-columns: 1fr;
+    }
+
+    .team-name {
+        font-size: 1.2rem;
+    }
+
+    .odds-selector {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('bet-amount');
+    const outcomeInputs = document.querySelectorAll('input[name="outcome"]');
+    const potentialWinSpan = document.getElementById('potential-win-amount');
+    const quickAmountBtns = document.querySelectorAll('.quick-amount');
+
+    // Коэффициенты через JSON (гарантированно правильный формат)
+    const oddsData = {{ odds_json|safe }};
+
+    console.log('🎯 Loaded odds via JSON:', oddsData);
+
+    function calculateWin() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const selectedOutcome = document.querySelector('input[name="outcome"]:checked');
+
+        if (selectedOutcome && amount > 0) {
+            const oddsId = selectedOutcome.id.replace('odds-', '');
+            const odds = oddsData[oddsId];
+
+            console.log('📊 Calculation:', amount, 'x', odds, '=', amount * odds);
+
+            if (odds && odds > 0) {
+                const potentialWin = (amount * odds).toFixed(2);
+                potentialWinSpan.textContent = `${potentialWin} ₽`;
+            } else {
+                potentialWinSpan.textContent = '0 ₽';
+            }
+        } else {
+            potentialWinSpan.textContent = '0 ₽';
+        }
+    }
+
+    quickAmountBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            amountInput.value = btn.dataset.amount;
+            calculateWin();
+        });
+    });
+
+    amountInput.addEventListener('input', calculateWin);
+    outcomeInputs.forEach(input => {
+        input.addEventListener('change', calculateWin);
+    });
+});
+</script>
+{% endblock %}

@@ -3,255 +3,577 @@
 {% block title %}Редактирование профиля | UmbrellaBet{% endblock %}
 
 {% block content %}
-<div class="edit-profile-card">
-    <h2 class="edit-profile-title">Редактирование профиля <span class="emoji">🛠️</span></h2>
+<div class="edit-profile-container">
+    <!-- Back Button -->
+    <a href="{% url 'accounts:profile' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Назад в профиль
+    </a>
 
-    <form method="post" enctype="multipart/form-data" class="edit-profile-form">
-        {% csrf_token %}
+    <!-- Profile Edit Card -->
+    <div class="edit-profile-card">
+        <div class="card-header">
+            <h2 class="edit-profile-title">Редактирование профиля</h2>
+            <p class="edit-profile-subtitle">Обновите информацию о себе</p>
+        </div>
 
-        <div class="avatar-edit">
-            <div class="avatar-preview">
-                {% if user.profile.avatar %}
-                    <img src="{{ user.profile.avatar.url }}" alt="Аватар {{ user.username }}">
-                {% else %}
-                    <div class="default-avatar">{{ user.username|first|upper }}</div>
-                {% endif %}
-                <label for="{{ profile_form.avatar.id_for_label }}" class="avatar-upload-btn" title="Загрузить аватар">
-                    <span>📸</span>
-                </label>
+        <form method="post" enctype="multipart/form-data" class="edit-profile-form">
+            {% csrf_token %}
+
+            <!-- Avatar Section -->
+            <div class="avatar-section">
+                <div class="avatar-preview">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="Аватар {{ user.username }}">
+                    {% else %}
+                        <div class="default-avatar">{{ user.username|first|upper }}</div>
+                    {% endif %}
+                    <div class="avatar-overlay">
+                        <div class="avatar-upload-btn">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                </div>
+                {{ profile_form.avatar }}
+                <p class="avatar-hint">Нажмите на камеру для загрузки нового аватара</p>
             </div>
-            {{ profile_form.avatar }}
-        </div>
 
-        <div class="form-group">
-            <label for="{{ user_form.email.id_for_label }}">Email</label>
-            {{ user_form.email }}
-            {{ user_form.email.errors }}
-        </div>
 
-        <div class="form-group">
-            <label for="{{ user_form.first_name.id_for_label }}">Имя</label>
-            {{ user_form.first_name }}
-            {{ user_form.first_name.errors }}
-        </div>
+            <!-- Form Fields -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ user_form.email.id_for_label }}">
+                        <i class="fas fa-envelope"></i>
+                        Email адрес
+                    </label>
+                    {{ user_form.email }}
+                    {% if user_form.email.errors %}
+                        <div class="field-error">{{ user_form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
 
-        <div class="form-group">
-            <label for="{{ user_form.last_name.id_for_label }}">Фамилия</label>
-            {{ user_form.last_name }}
-            {{ user_form.last_name.errors }}
-        </div>
+                <div class="form-group">
+                    <label for="{{ user_form.first_name.id_for_label }}">
+                        <i class="fas fa-user"></i>
+                        Имя
+                    </label>
+                    {{ user_form.first_name }}
+                    {% if user_form.first_name.errors %}
+                        <div class="field-error">{{ user_form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
 
-        <button type="submit" class="profile-save-btn">💾 Сохранить изменения</button>
-    </form>
+                <div class="form-group">
+                    <label for="{{ user_form.last_name.id_for_label }}">
+                        <i class="fas fa-user"></i>
+                        Фамилия
+                    </label>
+                    {{ user_form.last_name }}
+                    {% if user_form.last_name.errors %}
+                        <div class="field-error">{{ user_form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
 
-    <div class="profile-section">
-        <div class="security-options">
-            <a href="{% url 'accounts:password_change' %}" class="security-option">
-                <span>🔑 Изменить пароль</span>
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </a>
-        </div>
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <button type="submit" class="btn primary save-btn">
+                    <i class="fas fa-save"></i>
+                    Сохранить изменения
+                </button>
+                <a href="{% url 'accounts:profile' %}" class="btn secondary">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </a>
+            </div>
+        </form>
     </div>
 
-    <div class="auth-link">
-        <a href="{% url 'accounts:profile' %}">← Вернуться в профиль</a>
+    <!-- Security Section -->
+    <div class="security-card">
+        <h3>Безопасность аккаунта</h3>
+        <div class="security-options">
+            <a href="{% url 'accounts:password_change' %}" class="security-option">
+                <div class="option-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title">Изменить пароль</div>
+                    <div class="option-description">Обновите пароль для защиты аккаунта</div>
+                </div>
+                <div class="option-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </a>
+
+            <div class="security-option">
+                <div class="option-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="option-content">
+                    <div class="option-title">Двухфакторная аутентификация</div>
+                    <div class="option-description">Дополнительная защита аккаунта</div>
+                </div>
+                <div class="option-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.edit-profile-card {
-    max-width: 480px;
-    margin: 2.5rem auto;
-    background: #fff;
-    border-radius: 22px;
-    box-shadow: 0 6px 32px rgba(59,130,246,0.13);
-    padding: 2.5rem 2rem 2rem 2rem;
-    position: relative;
+.edit-profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
 }
-.edit-profile-title {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #3b82f6;
-    text-align: center;
-    margin-bottom: 2rem;
-    letter-spacing: 1px;
-    display: flex;
+
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    justify-content: center;
+    margin-bottom: 2rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
-.emoji {
-    font-size: 2rem;
+
+.back-link:hover {
+    color: var(--accent-orange);
 }
-.edit-profile-form .form-group {
-    margin-bottom: 1.2rem;
+
+.edit-profile-card,
+.security-card {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
 }
-.edit-profile-form label {
-    display: block;
-    margin-bottom: 0.3rem;
-    color: #64748b;
-    font-weight: 600;
-}
-.edit-profile-form input {
-    width: 100%;
-    padding: 0.7rem;
-    border-radius: 8px;
-    border: 1.5px solid #dbeafe;
-    font-size: 1.05rem;
-    background: #f8fafc;
-    margin-bottom: 0.3rem;
-    transition: border 0.2s;
-}
-.edit-profile-form input:focus {
-    border: 1.5px solid #3b82f6;
-    outline: none;
-}
-.avatar-edit {
+
+.card-header {
     text-align: center;
     margin-bottom: 2rem;
 }
+
+.edit-profile-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.edit-profile-subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Avatar Section */
+.avatar-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
 .avatar-preview {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    overflow: hidden;
     margin: 0 auto 1rem;
-    background: linear-gradient(135deg, #3b82f6 60%, #f59e42 100%);
+    position: relative;
+    overflow: hidden;
+    border: 3px solid var(--accent-orange);
+    background: var(--gradient-heat);
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    box-shadow: 0 2px 12px rgba(59,130,246,0.13);
-    border: 5px solid #fff;
+    cursor: pointer;
 }
+
 .avatar-preview img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%;
 }
+
 .default-avatar {
-    font-size: 3.2rem;
-    color: #fff;
+    font-size: 3rem;
     font-weight: 700;
-    font-family: 'Montserrat', sans-serif;
-}
-#id_avatar {
-    display: none;
-}
-.avatar-upload-btn {
-    position: absolute;
-    bottom: 7px;
-    right: 7px;
-    background: linear-gradient(90deg, #f59e42, #3b82f6);
-    color: #fff;
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.10);
-    transition: background 0.2s, transform 0.2s;
-}
-.avatar-upload-btn:hover {
-    background: linear-gradient(90deg, #a21caf, #3b82f6);
-    transform: scale(1.08);
-}
-.profile-save-btn {
-    width: 100%;
-    padding: 0.75rem;
-    background: linear-gradient(90deg, #10b981, #3b82f6);
     color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: background 0.3s, transform 0.2s;
+}
+
+.avatar-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--accent-orange);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    border: 3px solid var(--bg-card);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
-.profile-save-btn:hover {
-    background: linear-gradient(90deg, #3b82f6, #10b981);
-    transform: scale(1.04);
+
+.avatar-overlay:hover {
+    background: var(--primary-blue);
+    transform: scale(1.1);
 }
-.security-options {
-    margin-top: 1.5rem;
-    text-align: center;
+
+.avatar-upload-btn {
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
-.security-option {
-    display: inline-flex;
+
+/* Скрываем input файла */
+input[type="file"] {
+    display: none !important;
+}
+
+.avatar-hint {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+
+/* Form Styles */
+.form-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #3b82f6;
-    font-weight: 700;
-    background: #e0e7ff;
+}
+
+.form-group input {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 0.7rem 1.5rem;
-    text-decoration: none;
-    transition: background 0.2s, color 0.2s, transform 0.2s;
-    margin-bottom: 1.2rem;
-}
-.security-option:hover {
-    background: #a21caf;
-    color: #fff;
-    transform: scale(1.04);
-}
-.auth-link {
-    text-align: center;
-    margin-top: 1.5rem;
+    padding: 1rem;
+    color: var(--text-primary);
     font-size: 1rem;
+    transition: all 0.3s ease;
 }
-.auth-link a {
-    color: #3b82f6;
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent-orange);
+    background: var(--bg-card);
+}
+
+.field-error {
+    color: var(--error);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.save-btn {
+    background: var(--accent-orange) !important;
+    border-color: var(--accent-orange) !important;
+}
+
+/* Security Section */
+.security-card h3 {
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+    font-size: 1.3rem;
     font-weight: 600;
+}
+
+.security-options {
+    display: grid;
+    gap: 1rem;
+}
+
+.security-option {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     text-decoration: none;
-    transition: color 0.2s;
+    color: inherit;
+    transition: all 0.3s ease;
 }
-.auth-link a:hover {
-    color: #a21caf;
+
+.security-option:hover {
+    border-color: var(--accent-orange);
+    background: var(--bg-card);
+    color: inherit;
+    text-decoration: none;
 }
-@media (max-width: 600px) {
-    .edit-profile-card { padding: 1rem; }
-    .edit-profile-title { font-size: 1.3rem; }
+
+.option-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-orange);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.option-description {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.option-arrow {
+    color: var(--text-muted);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    transition: 0.4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--accent-orange);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .edit-profile-container {
+        padding: 1rem;
+    }
+
+    .edit-profile-card,
+    .security-card {
+        padding: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .security-option {
+        padding: 1rem;
+    }
+
+    .option-content {
+        min-width: 0;
+    }
 }
 </style>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const avatarInput = document.getElementById('{{ profile_form.avatar.id_for_label }}');
+    // Ищем input по разным возможным ID
+    let avatarInput = document.getElementById('id_avatar') ||
+                     document.querySelector('input[type="file"]') ||
+                     document.querySelector('input[name="avatar"]');
+
     const avatarPreview = document.querySelector('.avatar-preview');
-    avatarInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Удаляем содержимое превью
-                while (avatarPreview.firstChild) {
-                    avatarPreview.removeChild(avatarPreview.firstChild);
+    const uploadBtn = document.querySelector('.avatar-upload-btn');
+
+    console.log('🔍 Debug info:');
+    console.log('Avatar input:', avatarInput);
+    console.log('Avatar preview:', avatarPreview);
+    console.log('Upload button:', uploadBtn);
+
+    // Если input не найден, создаем его
+    if (!avatarInput) {
+        console.log('⚠️ Input not found, creating new one');
+        avatarInput = document.createElement('input');
+        avatarInput.type = 'file';
+        avatarInput.name = 'avatar';
+        avatarInput.id = 'id_avatar';
+        avatarInput.accept = 'image/*';
+        avatarInput.style.display = 'none';
+        document.body.appendChild(avatarInput);
+    }
+
+    // Обработчик клика на кнопку загрузки
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🖱️ Upload button clicked');
+            avatarInput.click();
+        });
+    }
+
+    // Обработчик изменения файла
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(event) {
+            console.log('📁 Change event fired');
+
+            const files = event.target.files;
+            console.log('Files:', files);
+            console.log('Files length:', files ? files.length : 0);
+
+            if (files && files.length > 0) {
+                const file = files[0]; // ИСПРАВЛЕНО: берем первый файл
+                console.log('Selected file:', file);
+                console.log('File type:', file.type);
+                console.log('File size:', file.size);
+
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        console.log('✅ File loaded successfully');
+
+                        if (avatarPreview) {
+                            // Сохраняем overlay перед очисткой
+                            const overlay = avatarPreview.querySelector('.avatar-overlay');
+
+                            // Очищаем превью
+                            avatarPreview.innerHTML = '';
+
+                            // Создаем новое изображение
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            img.alt = 'Аватар';
+
+                            avatarPreview.appendChild(img);
+
+                            // Восстанавливаем overlay
+                            if (overlay) {
+                                avatarPreview.appendChild(overlay);
+                            } else {
+                                // Создаем новый overlay
+                                const newOverlay = document.createElement('div');
+                                newOverlay.className = 'avatar-overlay';
+                                newOverlay.innerHTML = `
+                                    <div class="avatar-upload-btn">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                `;
+                                avatarPreview.appendChild(newOverlay);
+
+                                // Добавляем обработчик для нового overlay
+                                const newUploadBtn = newOverlay.querySelector('.avatar-upload-btn');
+                                if (newUploadBtn) {
+                                    newUploadBtn.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        avatarInput.click();
+                                    });
+                                }
+                            }
+                        }
+                    };
+
+                    reader.onerror = function() {
+                        console.error('❌ Error reading file');
+                        alert('Ошибка при чтении файла');
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    console.error('❌ Invalid file type:', file.type);
+                    alert('Пожалуйста, выберите изображение (JPG, PNG, GIF)');
                 }
-                // Создаем новое изображение
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                avatarPreview.appendChild(img);
+            } else {
+                console.log('❌ No files selected');
             }
-            reader.readAsDataURL(file);
-        }
-    });
+        });
+    }
+
+    // Анимация для кнопки сохранения
+    const saveBtn = document.querySelector('.save-btn');
+    const form = document.querySelector('.edit-profile-form');
+
+    if (form && saveBtn) {
+        form.addEventListener('submit', function() {
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+            saveBtn.disabled = true;
+        });
+    }
 });
 </script>
 {% endblock %}
+
+
+
+

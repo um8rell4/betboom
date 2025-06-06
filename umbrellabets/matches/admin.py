@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.urls import reverse, path
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from .models import Sport, Match, Bookmaker, Odds, Bet
 
 
@@ -54,13 +56,12 @@ class BetInline(admin.TabularInline):
 class MatchAdmin(admin.ModelAdmin):
     list_display = [
         'match_title', 'sport', 'commence_time_formatted',
-        'status_colored', 'best_odds_display', 'bets_count'
+        'status_colored', 'result_colored', 'bets_count', 'actions_column'
     ]
-    list_filter = ['sport', 'status', 'commence_time']
+    list_filter = ['sport', 'status', 'result', 'commence_time']
     search_fields = ['home_team', 'away_team', 'api_id']
     date_hierarchy = 'commence_time'
     ordering = ['commence_time']
-    inlines = [OddsInline, BetInline]
 
     fieldsets = (
         ('Основная информация', {
@@ -69,8 +70,8 @@ class MatchAdmin(admin.ModelAdmin):
         ('Команды', {
             'fields': ('home_team', 'away_team')
         }),
-        ('Время', {
-            'fields': ('commence_time',)
+        ('Время и результат', {
+            'fields': ('commence_time', 'result')
         }),
         ('Метаданные', {
             'fields': ('created_at', 'updated_at'),
@@ -78,6 +79,8 @@ class MatchAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = ['created_at', 'updated_at']
+
+    actions = ['finish_match_home', 'finish_match_away', 'cancel_match']
 
     def match_title(self, obj):
         return f"{obj.home_team} vs {obj.away_team}"
@@ -91,9 +94,9 @@ class MatchAdmin(admin.ModelAdmin):
 
     def status_colored(self, obj):
         colors = {
-            'upcoming': '#10b981',  # зеленый
-            'live': '#f59e42',  # оранжевый
-            'completed': '#64748b'  # серый
+            'upcoming': '#10b981',
+            'live': '#f59e42',
+            'completed': '#64748b'
         }
         color = colors.get(obj.status, '#64748b')
         return format_html(
@@ -104,22 +107,23 @@ class MatchAdmin(admin.ModelAdmin):
 
     status_colored.short_description = 'Статус'
 
-    def best_odds_display(self, obj):
-        odds = obj.odds.all()
-        if odds:
-            home_odds = odds.filter(outcome='home').first()
-            away_odds = odds.filter(outcome='away').first()
+    def result_colored(self, obj):
+        if not obj.result:
+            return format_html('<span style="color: #94a3b8;">Не определен</span>')
 
-            home_price = home_odds.price if home_odds else 'N/A'
-            away_price = away_odds.price if away_odds else 'N/A'
+        colors = {
+            'home': '#10b981',
+            'away': '#3b82f6',
+            'cancelled': '#ef4444'
+        }
+        color = colors.get(obj.result, '#64748b')
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color,
+            obj.get_result_display()
+        )
 
-            return format_html(
-                '<span style="color: #3b82f6;">{}</span> / <span style="color: #a21caf;">{}</span>',
-                home_price, away_price
-            )
-        return 'Нет коэффициентов'
-
-    best_odds_display.short_description = 'Коэффициенты (Дом/Гости)'
+    result_colored.short_description = 'Результат'
 
     def bets_count(self, obj):
         count = obj.bets.count()
@@ -129,6 +133,118 @@ class MatchAdmin(admin.ModelAdmin):
         return count
 
     bets_count.short_description = 'Ставки'
+
+    def actions_column(self, obj):
+        if obj.status != 'completed' and obj.bets.filter(status='pending').exists():
+            return format_html(
+                '<a class="button" href="{}">Завершить матч</a>',
+                reverse('admin:finish_match', args=[obj.pk])
+            )
+        elif obj.status == 'completed':
+            return format_html('<span style="color: #10b981;">✅ Завершен</span>')
+        else:
+            return format_html('<span style="color: #94a3b8;">Нет ставок</span>')
+
+    actions_column.short_description = 'Действия'
+
+    def finish_match_home(self, request, queryset):
+        """Завершить матчи победой хозяев"""
+        count = 0
+        for match in queryset:
+            if match.status != 'completed':
+                success, message = match.finish_match('home')
+                if success:
+                    count += 1
+                    self.message_user(request, f"Матч {match} завершен победой хозяев. {message}")
+                else:
+                    self.message_user(request, f"Ошибка в матче {match}: {message}", level=messages.ERROR)
+
+        if count > 0:
+            self.message_user(request, f"Завершено {count} матчей победой хозяев")
+
+    finish_match_home.short_description = "🏠 Завершить победой хозяев"
+
+    def finish_match_away(self, request, queryset):
+        """Завершить матчи победой гостей"""
+        count = 0
+        for match in queryset:
+            if match.status != 'completed':
+                success, message = match.finish_match('away')
+                if success:
+                    count += 1
+                    self.message_user(request, f"Матч {match} завершен победой гостей. {message}")
+                else:
+                    self.message_user(request, f"Ошибка в матче {match}: {message}", level=messages.ERROR)
+
+        if count > 0:
+            self.message_user(request, f"Завершено {count} матчей победой гостей")
+
+    finish_match_away.short_description = "✈️ Завершить победой гостей"
+
+    def cancel_match(self, request, queryset):
+        """Отменить матчи"""
+        count = 0
+        for match in queryset:
+            if match.status != 'completed':
+                success, message = match.finish_match('cancelled')
+                if success:
+                    count += 1
+                    # При отмене вернуть деньги
+                    for bet in match.bets.filter(status='pending'):
+                        bet.status = 'cancelled'
+                        bet.save()
+                        bet.user.profile.balance += bet.amount
+                        bet.user.profile.save()
+
+        if count > 0:
+            self.message_user(request, f"Отменено {count} матчей, деньги возвращены")
+
+    cancel_match.short_description = "❌ Отменить матчи"
+
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<int:match_id>/finish/',
+                self.admin_site.admin_view(self.finish_match_view),
+                name='finish_match',
+            ),
+        ]
+        return custom_urls + urls
+
+    def finish_match_view(self, request, match_id):
+        """Кастомная страница завершения матча"""
+        match = Match.objects.get(pk=match_id)
+
+        if request.method == 'POST':
+            winner = request.POST.get('winner')
+            if winner in ['home', 'away', 'cancelled']:
+                success, message = match.finish_match(winner)
+                if success:
+                    self.message_user(request, f"Матч завершен! {message}")
+                else:
+                    self.message_user(request, f"Ошибка: {message}", level=messages.ERROR)
+
+                return HttpResponseRedirect(reverse('admin:matches_match_changelist'))
+
+        # Статистика ставок
+        pending_bets = match.bets.filter(status='pending')
+        home_bets = pending_bets.filter(outcome='home')
+        away_bets = pending_bets.filter(outcome='away')
+
+        context = {
+            'match': match,
+            'pending_bets_count': pending_bets.count(),
+            'home_bets_count': home_bets.count(),
+            'away_bets_count': away_bets.count(),
+            'home_total_amount': sum(bet.amount for bet in home_bets),
+            'away_total_amount': sum(bet.amount for bet in away_bets),
+            'home_potential_payout': sum(bet.potential_win for bet in home_bets),
+            'away_potential_payout': sum(bet.potential_win for bet in away_bets),
+        }
+
+        return render(request, 'admin/matches/finish_match.html', context)
 
 
 @admin.register(Odds)

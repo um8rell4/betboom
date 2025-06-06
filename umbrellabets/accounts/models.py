@@ -182,6 +182,22 @@ class UserProfile(models.Model):
             comment=f'Реферальный бонус за регистрацию'
         )
 
+    def update_betting_stats(self):
+        """Обновляет статистику ставок пользователя"""
+        from matches.models import Bet
+
+        user_bets = Bet.objects.filter(user=self.user)
+
+        self.total_bets = user_bets.count()
+        self.won_bets = user_bets.filter(status='won').count()
+
+        # Подсчитать общую сумму выигрышей
+        won_bets = user_bets.filter(status='won')
+        total_winnings = sum(bet.potential_win for bet in won_bets)
+        self.total_winnings = total_winnings
+
+        self.save(update_fields=['total_bets', 'won_bets', 'total_winnings'])
+
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
@@ -293,3 +309,23 @@ def transaction_post_save(sender, instance, created, **kwargs):
         # Обновление существующей транзакции
         if old_status != instance.status:
             instance.update_user_balance(old_status)
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('bet_won', 'Ставка выиграна'),
+        ('bet_lost', 'Ставка проиграна'),
+        ('match_started', 'Матч начался'),
+        ('bonus', 'Бонус получен'),
+    ]
+
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+

@@ -1,738 +1,390 @@
 {% extends 'base.html' %}
 
-{% block title %}Матчи | UmbrellaBet{% endblock %}
+{% block title %}Ставки на киберспорт | UmbrellaBet{% endblock %}
 
 {% block content %}
-<div class="matches-container">
-    <h1 class="matches-title">Матчи <span class="emoji">🎮</span></h1>
+<div class="betting-platform">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            Профессиональные ставки на <span class="gradient-text">киберспорт</span>
+        </h1>
+        <p class="hero-subtitle">
+            Высокие коэффициенты • Быстрые выплаты • Надежность
+        </p>
+    </div>
 
-    <!-- Фильтр по спорту -->
-    <div class="sport-filter">
-        <a href="?sport=all" class="filter-btn {% if current_sport == 'all' %}active{% endif %}">
+    <!-- Sports Filter -->
+    <div class="sports-filter">
+        <a href="?sport=all" class="filter-tab {% if current_sport == 'all' %}active{% endif %}">
             Все виды спорта
         </a>
         {% for sport in sports %}
-        <a href="?sport={{ sport.key }}" class="filter-btn {% if current_sport == sport.key %}active{% endif %}">
+        <a href="?sport={{ sport.key }}" class="filter-tab {% if current_sport == sport.key %}active{% endif %}">
+            {% if sport.key == 'cs2' %}🔫{% elif sport.key == 'dota2' %}⚔️{% else %}🎮{% endif %}
             {{ sport.title }}
         </a>
         {% endfor %}
     </div>
 
-    <!-- Статистика -->
-    <div class="stats-section">
-        <div class="stat-card">
-            <div class="stat-number">{{ total_matches }}</div>
-            <div class="stat-label">Всего матчей</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ live_matches|length }}</div>
-            <div class="stat-label">Live матчей</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ upcoming_count }}</div>
-            <div class="stat-label">Предстоящих</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ sports|length }}</div>
-            <div class="stat-label">Видов спорта</div>
-        </div>
-    </div>
-
-    <!-- Текущие матчи (Live) - НОВЫЙ ДИЗАЙН -->
+    <!-- Live Matches -->
     {% if live_matches %}
-    <div class="live-section">
-        <h2 class="live-title">
-            <span class="live-indicator">🔴</span>
-            Прямо сейчас
+    <section class="live-section">
+        <h2 class="section-title">
+            <span class="live-indicator"></span>
+            Live матчи
         </h2>
 
-        <div class="live-matches-grid">
+        <div class="matches-grid live-grid">
             {% for match in live_matches %}
-            <div class="live-match-card">
-                <div class="live-badge">
-                    <span class="live-dot"></span>
-                    LIVE
-                </div>
-
+            <div class="match-card live-match">
                 <div class="match-header">
-                    <div class="match-time">
-                        <i class="time-icon">🕐</i>
-                        {{ match.commence_time|date:"d.m H:i" }}
-                    </div>
-                    <div class="tournament-info">{{ match.sport.title }}</div>
+                    <div class="match-league">{{ match.sport.title }}</div>
+                    <div class="live-badge">LIVE</div>
                 </div>
 
-                <div class="teams-container">
-                    <div class="team-block">
-                        <div class="team-name">{{ match.home_team }}</div>
-                        <div class="team-odds">
-                            {% for odds in match.odds.all %}
-                                {% if odds.outcome == 'home' %}{{ odds.price }}{% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div class="vs-section">
-                        <div class="vs-text">VS</div>
-                        <div class="live-pulse"></div>
-                    </div>
-
-                    <div class="team-block">
-                        <div class="team-name">{{ match.away_team }}</div>
-                        <div class="team-odds">
-                            {% for odds in match.odds.all %}
-                                {% if odds.outcome == 'away' %}{{ odds.price }}{% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
+                <div class="match-teams">
+                    <div class="team">{{ match.home_team }}</div>
+                    <div class="vs">VS</div>
+                    <div class="team">{{ match.away_team }}</div>
                 </div>
 
-                <a href="{% url 'matches:match_detail' match.id %}" class="live-bet-btn">
-                    <span class="btn-icon">⚡</span>
-                    Сделать ставку
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Предстоящие матчи -->
-    {% if matches_by_sport %}
-        <div class="upcoming-section">
-            <h2 class="upcoming-title">
-                <span class="upcoming-icon">⏰</span>
-                Предстоящие матчи
-            </h2>
-
-            {% for sport_key, sport_data in matches_by_sport.items %}
-            <div class="sport-section">
-                <h3 class="sport-title">
-                    {% if sport_data.sport.key == 'cs2' %}🔫{% elif sport_data.sport.key == 'dota2' %}⚔️{% else %}🎮{% endif %}
-                    {{ sport_data.sport.title }}
-                    <span class="matches-count">({{ sport_data.matches|length }} матчей)</span>
-                </h3>
-
-                <div class="upcoming-matches-grid">
-                    {% for match in sport_data.matches %}
-                    <a href="{% url 'matches:match_detail' match.id %}" class="upcoming-match-card">
-                        <!-- Команда 1 -->
-                        <div class="team-section">
-                            <div class="team-name">{{ match.home_team }}</div>
-                            <div class="team-odds">
-                                {% for odds in match.odds.all %}
-                                    {% if odds.outcome == 'home' %}{{ odds.price }}{% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- Центральная информация -->
-                        <div class="match-info">
-                            <div class="match-time">{{ match.commence_time|date:"d.m H:i" }}</div>
-                            <div class="tournament-name">{{ match.sport.title }}</div>
-                            <div class="match-status-small">{{ match.get_status_display }}</div>
-                        </div>
-
-                        <!-- Команда 2 -->
-                        <div class="team-section">
-                            <div class="team-name">{{ match.away_team }}</div>
-                            <div class="team-odds">
-                                {% for odds in match.odds.all %}
-                                    {% if odds.outcome == 'away' %}{{ odds.price }}{% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </a>
+                <div class="match-odds">
+                    {% for odds in match.odds.all|slice:":2" %}
+                    <div class="odds-btn">
+                        <span class="odds-label">{{ odds.get_outcome_display }}</span>
+                        <span class="odds-value">{{ odds.price }}</span>
+                    </div>
                     {% endfor %}
                 </div>
+
+                <a href="{% url 'matches:match_detail' match.id %}" class="match-link"></a>
             </div>
             {% endfor %}
         </div>
-    {% else %}
-        <div class="no-matches">
-            <div class="no-matches-icon">😔</div>
-            <h3>Матчей не найдено</h3>
-            <p>Попробуйте обновить данные или выберите другой вид спорта</p>
-            <button class="refresh-btn" onclick="window.location.reload()">🔄 Обновить</button>
-        </div>
+    </section>
     {% endif %}
 
-    <!-- Дополнительная информация -->
-    <div class="info-section">
-        <div class="info-card">
-            <h4>🎯 Как делать ставки?</h4>
-            <p>Выберите матч, укажите сумму ставки и подтвердите. Все ставки делаются виртуальными монетами!</p>
+    <!-- Upcoming Matches -->
+    {% if matches_by_sport %}
+        {% for sport_key, sport_data in matches_by_sport.items %}
+        <section class="matches-section">
+            <h3 class="sport-title">
+                {% if sport_data.sport.key == 'cs2' %}🔫{% elif sport_data.sport.key == 'dota2' %}⚔️{% else %}🎮{% endif %}
+                {{ sport_data.sport.title }}
+                <span class="matches-count">({{ sport_data.matches|length }})</span>
+            </h3>
+
+            <div class="matches-grid">
+                {% for match in sport_data.matches %}
+                <div class="match-card">
+                    <div class="match-header">
+                        <div class="match-time">{{ match.commence_time|date:"d.m H:i" }}</div>
+                        <div class="match-league">{{ match.sport.title }}</div>
+                    </div>
+
+                    <div class="match-teams">
+                        <div class="team">{{ match.home_team }}</div>
+                        <div class="vs">VS</div>
+                        <div class="team">{{ match.away_team }}</div>
+                    </div>
+
+                    <div class="match-odds">
+                        {% for odds in match.odds.all|slice:":2" %}
+                        <div class="odds-btn">
+                            <span class="odds-value">{{ odds.price }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <a href="{% url 'matches:match_detail' match.id %}" class="match-link"></a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h3>Матчи не найдены</h3>
+            <p>Попробуйте выбрать другой вид спорта или обновите страницу</p>
         </div>
-        <div class="info-card">
-            <h4>🏆 Рейтинг игроков</h4>
-            <p>Соревнуйтесь с друзьями и одноклассниками. Зарабатывайте очки за успешные прогнозы!</p>
-        </div>
-        <div class="info-card">
-            <h4>📚 Обучение</h4>
-            <p>Изучайте аналитику, следите за командами и улучшайте свои навыки прогнозирования!</p>
-        </div>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.matches-container {
+.betting-platform {
     max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2rem;
+    margin: 0 auto;
 }
-.matches-title {
-    font-family: 'Montserrat', sans-serif;
+
+/* Hero Section */
+.hero-section {
+    text-align: center;
+    padding: 3rem 0;
+    background: var(--gradient-card);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.hero-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #3b82f6;
-    text-align: center;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+}
+
+/* Sports Filter */
+.sports-filter {
+    display: flex;
+    gap: 0.5rem;
     margin-bottom: 2rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+}
+
+.filter-tab {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    justify-content: center;
-}
-.emoji {
-    font-size: 2.5rem;
 }
 
-/* Статистика */
-.stats-section {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
+.filter-tab:hover {
+    background: var(--accent-orange);
+    color: var(--text-primary);
+    border-color: var(--accent-orange);
 }
-.stat-card {
-    background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 100%);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    border: 1px solid #dbeafe;
+
+.filter-tab.active {
+    background: var(--accent-orange);
+    color: var(--text-primary);
+    border-color: var(--accent-orange);
 }
-.stat-number {
-    font-size: 1.8rem;
+
+/* Section Titles */
+.section-title {
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #3b82f6;
-    margin-bottom: 0.3rem;
-}
-.stat-label {
-    font-size: 0.8rem;
-    color: #64748b;
-    font-weight: 500;
-}
-
-.sport-filter {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-.filter-btn {
-    background: #e0e7ff;
-    color: #3b82f6;
-    padding: 0.5rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-.filter-btn.active,
-.filter-btn:hover {
-    background: #3b82f6;
-    color: #fff;
-    transform: scale(1.05);
-}
-
-/* Live матчи */
-.live-section {
-    margin-bottom: 3rem;
-}
-
-.live-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #ef4444;
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    text-align: center;
-    justify-content: center;
+    color: var(--text-primary);
 }
 
+.sport-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.matches-count {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+/* Live Indicator */
 .live-indicator {
-    font-size: 1.5rem;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-orange);
+    border-radius: 50%;
     animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
 }
 
-.live-matches-grid {
+/* Matches Grid */
+.matches-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
-/* Если live матч только один, то на всю ширину */
-.live-matches-grid:has(.live-match-card:only-child) {
-    grid-template-columns: 1fr;
-    max-width: 600px;
-    margin: 0 auto;
+.live-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 }
 
-/* Альтернативный способ для браузеров без поддержки :has() */
-.live-matches-grid.single-match {
-    grid-template-columns: 1fr;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.live-match-card {
-    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 20px;
+/* Match Cards */
+.match-card {
+    background: var(--gradient-card);
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow:
-        0 10px 25px rgba(0,0,0,0.1),
-        0 0 0 1px rgba(239,68,68,0.1);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     position: relative;
-    overflow: hidden;
+    cursor: pointer;
 }
 
-.live-match-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #ef4444, #f59e42, #ef4444);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+.match-card:hover {
+    border-color: var(--accent-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233,69,96,0.2);
 }
 
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
-
-.live-match-card:hover {
-    transform: translateY(-5px);
-    box-shadow:
-        0 20px 40px rgba(0,0,0,0.15),
-        0 0 0 1px rgba(239,68,68,0.2);
-}
-
-.live-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    box-shadow: 0 4px 12px rgba(239,68,68,0.3);
-}
-
-.live-dot {
-    width: 6px;
-    height: 6px;
-    background: white;
-    border-radius: 50%;
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0.3; }
+.live-match {
+    border-color: var(--accent-orange);
+    box-shadow: 0 0 20px rgba(233,69,96,0.3);
 }
 
 .match-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-top: 0.5rem;
-}
-
-.match-time {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.time-icon {
-    font-size: 0.8rem;
-}
-
-.tournament-info {
-    background: #f1f5f9;
-    color: #475569;
-    padding: 0.3rem 0.8rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.teams-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    gap: 1rem;
-}
-
-.team-block {
-    flex: 1;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.team-name {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #1e293b;
-    line-height: 1.2;
-}
-
-.team-odds {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    color: white;
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.team-odds:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(59,130,246,0.4);
-}
-
-.vs-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 0 0 auto;
-}
-
-.vs-text {
-    font-weight: 900;
-    font-size: 1rem;
-    color: #ef4444;
-    background: #fef2f2;
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    border: 2px solid #fecaca;
-}
-
-.live-pulse {
-    width: 12px;
-    height: 12px;
-    background: #ef4444;
-    border-radius: 50%;
-    animation: pulse-grow 1.5s infinite;
-}
-
-@keyframes pulse-grow {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.5);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.live-bet-btn {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(239,68,68,0.3);
-}
-
-.live-bet-btn:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(239,68,68,0.4);
-    color: white;
-    text-decoration: none;
-}
-
-.btn-icon {
-    font-size: 1.1rem;
-}
-
-/* Остальные стили... */
-.stats-section {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 100%);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-    border: 1px solid #dbeafe;
-}
-
-.stat-number {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #3b82f6;
-    margin-bottom: 0.3rem;
-}
-
-.stat-label {
-    font-size: 0.8rem;
-    color: #64748b;
-    font-weight: 500;
-}
-
-/* Предстоящие матчи - новый горизонтальный дизайн */
-.upcoming-section {
-    margin-bottom: 3rem;
-}
-.upcoming-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #64748b;
-    margin-bottom: 2rem;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-}
-.upcoming-icon {
-    font-size: 1.5rem;
-}
-.sport-section {
-    margin-bottom: 2.5rem;
-}
-.sport-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #a21caf;
     margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
-.matches-count {
+
+.match-time {
+    color: var(--text-muted);
     font-size: 0.9rem;
-    color: #64748b;
     font-weight: 500;
 }
-.upcoming-matches-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-.upcoming-match-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid #e2e8f0;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-}
-.upcoming-match-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(59,130,246,0.12);
-    text-decoration: none;
-    color: inherit;
-}
-.team-section {
-    flex: 1;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-.team-name {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #1e293b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.team-odds {
-    background: #f8fafc;
-    color: #3b82f6;
-    font-weight: 700;
-    font-size: 1.1rem;
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
-}
-.match-info {
-    flex: 0 0 auto;
-    text-align: center;
-    padding: 0 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-.match-time {
-    color: #64748b;
-    font-weight: 600;
+
+.match-league {
+    color: var(--text-secondary);
     font-size: 0.85rem;
-}
-.tournament-name {
-    color: #a21caf;
     font-weight: 500;
-    font-size: 0.75rem;
-}
-.match-status-small {
-    background: #10b981;
-    color: #fff;
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.6rem;
-    font-weight: 600;
 }
 
-/* Информационная секция */
-.info-section {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-top: 3rem;
-}
-.info-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+.live-badge {
+    background: var(--accent-orange);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
     border-radius: 12px;
-    padding: 1.5rem;
-    border: 1px solid #e2e8f0;
-}
-.info-card h4 {
-    margin: 0 0 0.8rem 0;
-    color: #1e293b;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-.info-card p {
-    margin: 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    animation: pulse 2s infinite;
 }
 
-.no-matches {
-    text-align: center;
-    padding: 3rem;
-    color: #64748b;
+/* Match Teams */
+.match-teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
 }
-.no-matches-icon {
-    font-size: 3rem;
+
+.team {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.vs {
+    color: var(--accent-orange);
+    font-weight: 700;
+    margin: 0 1rem;
+    font-size: 0.9rem;
+}
+
+/* Match Odds */
+.match-odds {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.odds-btn {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.odds-btn:hover {
+    background: var(--accent-orange);
+    border-color: var(--accent-orange);
+}
+
+.odds-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.odds-value {
+    display: block;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+/* Match Link Overlay */
+.match-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-state h3 {
+    color: var(--text-secondary);
     margin-bottom: 1rem;
 }
-.refresh-btn {
-    background: linear-gradient(90deg, #3b82f6, #f59e42);
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: all 0.2s;
-}
-.refresh-btn:hover {
-    transform: scale(1.05);
-}
 
-/* Мобильная адаптивность */
+/* Responsive */
 @media (max-width: 768px) {
-    .matches-container {
-        padding: 1rem;
-    }
-    .matches-title {
+    .hero-title {
         font-size: 2rem;
     }
-    .stats-section {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .live-matches-grid {
+
+    .matches-grid,
+    .live-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
     }
-    .live-match-card {
-        padding: 1.2rem;
+
+    .match-card {
+        padding: 1rem;
     }
-    .upcoming-matches-grid {
-        grid-template-columns: 1fr;
-        gap: 0.8rem;
+
+    .sports-filter {
+        gap: 0.25rem;
     }
-    .upcoming-match-card {
-        padding: 0.8rem;
-    }
-    .info-section {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    .sport-filter {
-        gap: 0.5rem;
-    }
-    .filter-btn {
-        padding: 0.4rem 1rem;
+
+    .filter-tab {
+        padding: 0.5rem 1rem;
         font-size: 0.9rem;
-    }
-    .team-name {
-        font-size: 0.8rem;
-    }
-    .team-odds {
-        font-size: 1rem;
-        padding: 0.2rem 0.6rem;
-    }
-    .match-info {
-        padding: 0 0.5rem;
     }
 }
 </style>

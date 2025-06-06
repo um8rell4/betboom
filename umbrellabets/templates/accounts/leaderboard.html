@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Рейтинг игроков | UmbrellaBet{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <h1 class="leaderboard-title">🏆 Рейтинг игроков</h1>
+
+    <div class="leaderboard-tabs">
+        <button class="tab-btn active" data-tab="winners">💰 По выигрышам</button>
+        <button class="tab-btn" data-tab="accuracy">🎯 По точности</button>
+    </div>
+
+    <!-- Топ по выигрышам -->
+    <div class="tab-content active" id="winners-tab">
+        <div class="leaderboard-list">
+            {% for profile in top_winners %}
+            <div class="player-card">
+                <div class="rank">{{ forloop.counter }}</div>
+                <div class="player-info">
+                    <div class="player-name">{{ profile.user.username }}</div>
+                    <div class="player-stats">
+                        <span>Выиграно: {{ profile.total_winnings }} 🪙</span>
+                        <span>Ставок: {{ profile.total_bets }}</span>
+                    </div>
+                </div>
+                <div class="player-badge">
+                    {% if forloop.counter == 1 %}🥇
+                    {% elif forloop.counter == 2 %}🥈
+                    {% elif forloop.counter == 3 %}🥉
+                    {% else %}{{ forloop.counter }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Топ по точности -->
+    <div class="tab-content" id="accuracy-tab">
+        <div class="leaderboard-list">
+            {% for profile in top_accuracy %}
+            <div class="player-card">
+                <div class="rank">{{ forloop.counter }}</div>
+                <div class="player-info">
+                    <div class="player-name">{{ profile.user.username }}</div>
+                    <div class="player-stats">
+                        <span>Точность: {{ profile.win_percentage|floatformat:1 }}%</span>
+                        <span>Ставок: {{ profile.total_bets }}</span>
+                    </div>
+                </div>
+                <div class="accuracy-badge">{{ profile.win_percentage|floatformat:1 }}%</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+
+        // Переключить активные табы
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        this.classList.add('active');
+        document.getElementById(tabId + '-tab').classList.add('active');
+    });
+});
+</script>
+{% endblock %}

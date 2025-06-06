@@ -3,275 +3,413 @@
 {% block title %}Вход | UmbrellaBet{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <h2 class="auth-title">Вход в аккаунт <span class="emoji">🎮</span></h2>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2 class="login-title">Добро пожаловать</h2>
+            <p class="login-subtitle">Войдите в свой аккаунт UmbrellaBet</p>
+        </div>
 
-    {% for message in messages %}
-        {% if 'email_not_confirmed' in message.tags %}
-        <div class="email-confirmation-alert">
-            <div class="alert-content">
-                <div class="alert-icon">
-                    <span style="font-size:2rem;">📧</span>
+        <!-- Email Confirmation Alert -->
+        {% for message in messages %}
+            {% if 'email_not_confirmed' in message.tags %}
+            <div class="email-confirmation-alert">
+                <div class="alert-content">
+                    <div class="alert-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="alert-text">
+                        <h4>Подтвердите email</h4>
+                        <p>{{ message }}</p>
+                    </div>
                 </div>
-                <div class="alert-text">
-                    <h4>Аккаунт не активирован</h4>
-                    <p>{{ message }}</p>
+                <div class="alert-actions">
+                    <a href="{% url 'accounts:resend-confirmation' %}" class="resend-button">
+                        <i class="fas fa-paper-plane"></i>
+                        Отправить повторно
+                    </a>
                 </div>
             </div>
-            <div class="alert-actions">
-                <a href="{% url 'accounts:resend-confirmation' %}" class="resend-button">
-                    <span style="font-size:1.2rem;">🔄</span>
-                    Отправить письмо повторно
+            {% else %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ message }}
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {% for error in form.non_field_errors %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">
+                    <i class="fas fa-user"></i>
+                    Email или имя пользователя
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <div class="field-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">
+                    <i class="fas fa-lock"></i>
+                    Пароль
+                </label>
+                <div class="password-input">
+                    {{ form.password }}
+                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="password-eye"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                <div class="field-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-options">
+                <a href="{% url 'accounts:password_reset' %}" class="forgot-password">
+                    Забыли пароль?
                 </a>
             </div>
+
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Войти в аккаунт
+            </button>
+        </form>
+
+        <div class="login-footer">
+            Нет аккаунта? <a href="{% url 'accounts:register' %}" class="register-link">Зарегистрироваться</a>
         </div>
-        {% else %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-        {% endif %}
-    {% endfor %}
-
-    <form method="post" class="auth-form">
-        {% csrf_token %}
-        {% if form.non_field_errors %}
-        <div class="message error">
-            {% for error in form.non_field_errors %}
-                {{ error }}
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="form-group">
-            <label for="{{ form.username.id_for_label }}">Email или имя пользователя</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-            <div class="message error">{{ form.username.errors.as_text }}</div>
-            {% endif %}
-        </div>
-
-        <div class="form-group">
-            <label for="{{ form.password.id_for_label }}">Пароль</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-            <div class="message error">{{ form.password.errors.as_text }}</div>
-            {% endif %}
-        </div>
-
-        <button type="submit" class="auth-btn"><span style="font-size:1.2rem;">🚀</span> Войти</button>
-    </form>
-
-    <div class="auth-link">
-        Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a>
-    </div>
-    <div class="auth-link">
-        <a href="{% url 'accounts:password_reset' %}">Забыли пароль?</a>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-body {
-    background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%);
-}
-.auth-container {
-    max-width: 420px;
-    width: 100%;
+.login-container {
+    max-width: 450px;
     margin: 3rem auto;
-    background: #fff;
-    border-radius: 22px;
-    box-shadow: 0 6px 32px rgba(59,130,246,0.10);
-    padding: 2.5rem 2rem 2rem 2rem;
-    box-sizing: border-box;
+    padding: 2rem;
 }
-.auth-title {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #3b82f6;
+
+.login-card {
+    background: var(--gradient-card);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.login-header {
     text-align: center;
     margin-bottom: 2rem;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
 }
-.emoji {
+
+.login-title {
     font-size: 2rem;
-}
-.auth-form .form-group {
-    margin-bottom: 1.2rem;
-}
-.auth-form label {
-    display: block;
-    margin-bottom: 0.3rem;
-    color: #64748b;
-    font-weight: 600;
-}
-.auth-form input {
-    width: 100%;
-    padding: 0.7rem;
-    border-radius: 8px;
-    border: 1.5px solid #dbeafe;
-    font-size: 1.05rem;
-    background: #f8fafc;
-    margin-bottom: 0.3rem;
-    transition: border 0.2s;
-    box-sizing: border-box;
-}
-.auth-form input:focus {
-    border: 1.5px solid #3b82f6;
-    outline: none;
-}
-.auth-btn {
-    background: linear-gradient(90deg, #3b82f6, #f59e42);
-    color: #fff;
-    border-radius: 8px;
-    padding: 0.7rem 2rem;
     font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
-    transition: background 0.2s, transform 0.2s;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 0.5rem;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
 }
-.auth-btn:hover {
-    background: linear-gradient(90deg, #a21caf, #3b82f6);
-    transform: scale(1.04);
+
+.login-subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.95rem;
 }
-.auth-link {
-    text-align: center;
-    margin-top: 1.2rem;
-    font-size: 1rem;
-}
-.auth-link a {
-    color: #3b82f6;
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-.auth-link a:hover {
-    color: #a21caf;
-}
+
+/* Email Confirmation Alert */
 .email-confirmation-alert {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 1.5px solid #f59e0b;
-    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(245,158,66,0.1) 0%, rgba(245,158,66,0.05) 100%);
+    border: 1px solid var(--warning);
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.09);
 }
+
 .alert-content {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1rem;
 }
+
 .alert-icon {
-    flex-shrink: 0;
     width: 48px;
     height: 48px;
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(245,158,66,0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #d97706;
+    color: var(--warning);
+    font-size: 1.2rem;
+    flex-shrink: 0;
 }
+
 .alert-text h4 {
     margin: 0 0 0.5rem 0;
-    color: #92400e;
+    color: var(--warning);
     font-size: 1.1rem;
     font-weight: 700;
 }
+
 .alert-text p {
     margin: 0;
-    color: #a16207;
+    color: var(--text-secondary);
     line-height: 1.5;
 }
+
 .alert-actions {
     display: flex;
     justify-content: flex-end;
 }
+
 .resend-button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: #f59e0b;
+    background: var(--warning);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     text-decoration: none;
-    font-weight: 700;
-    transition: all 0.3s;
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
-    font-size: 1.05rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
 }
+
 .resend-button:hover {
-    background: #d97706;
-    transform: translateY(-1px) scale(1.04);
-    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    background: var(--accent-orange);
+    transform: translateY(-1px);
     color: white;
     text-decoration: none;
 }
 
-/* Адаптивность для мобильных */
-@media (max-width: 900px) {
-    .auth-container {
-        max-width: 95vw;
-        padding: 2rem 1rem 1.5rem 1rem;
+/* Alert */
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-error {
+    background: rgba(245,101,101,0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.alert-success {
+    background: rgba(72,187,120,0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent-orange);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(233,69,96,0.1);
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: var(--accent-orange);
+}
+
+.field-error {
+    color: var(--error);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* Form Options */
+.form-options {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+}
+
+.forgot-password {
+    color: var(--accent-orange);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    background: var(--accent-orange);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.login-btn:hover {
+    background: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233,69,96,0.3);
+}
+
+/* Login Footer */
+.login-footer {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.register-link {
+    color: var(--accent-orange);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 1rem;
+        margin: 2rem auto;
+    }
+
+    .login-card {
+        padding: 1.5rem;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
     }
 }
-@media (max-width: 600px) {
-    .auth-container {
+
+@media (max-width: 480px) {
+    .login-container {
         margin: 1rem auto;
-        padding: 1rem 0.5rem 1rem 0.5rem;
-        border-radius: 14px;
-        box-shadow: 0 2px 8px rgba(59,130,246,0.08);
     }
-    .auth-title {
-        font-size: 1.15rem;
-        margin-bottom: 1rem;
-    }
-    .auth-form .form-group {
-        margin-bottom: 0.8rem;
-    }
-    .auth-form label,
-    .auth-form input,
-    .auth-form small {
-        font-size: 0.97rem;
-    }
-    .auth-btn {
-        font-size: 1rem;
-        padding: 0.6rem 0.6rem;
-    }
-    .email-confirmation-alert {
+
+    .login-card {
         padding: 1rem;
-        font-size: 0.97rem;
     }
+
     .alert-content {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
-    .alert-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 1.3rem;
-    }
+
     .alert-actions {
         justify-content: center;
     }
+
     .resend-button {
         width: 100%;
         justify-content: center;
-        font-size: 1rem;
     }
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const passwordInput = document.querySelector('input[name="password"]');
+    const eyeIcon = document.getElementById('password-eye');
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация для кнопки входа
+    const loginBtn = document.querySelector('.login-btn');
+    const form = document.querySelector('.login-form');
+
+    if (form && loginBtn) {
+        form.addEventListener('submit', function() {
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход в систему...';
+            loginBtn.disabled = true;
+        });
+    }
+});
+</script>
 {% endblock %}

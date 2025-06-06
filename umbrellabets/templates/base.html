@@ -3,438 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}UmbrellaBet — Ставки на CS2 и Dota 2{% endblock %}</title>
+    <title>{% block title %}UmbrellaBet — Профессиональные ставки на киберспорт{% endblock %}</title>
     {% load static %}
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #3b82f6;
-            --accent: #f59e42;
-            --secondary: #a21caf;
-            --success: #10b981;
-            --background: #f3f4f6;
-            --card-bg: #fff;
-            --text: #1e293b;
-            --shadow: 0 4px 16px rgba(59,130,246,0.08);
+            --primary-dark: #1a1a2e;
+            --primary-blue: #0f3460;
+            --accent-orange: #e94560;
+            --accent-yellow: #f5a623;
+            --gradient-main: linear-gradient(135deg, #0f3460 0%, #1a1a2e 50%, #e94560 100%);
+            --gradient-card: linear-gradient(145deg, #16213e 0%, #0f3460 100%);
+            --gradient-heat: linear-gradient(90deg, #0f3460, #e94560, #f5a623, #0f3460);
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --text-muted: #8892a6;
+            --bg-dark: #0d1421;
+            --bg-card: #16213e;
+            --bg-input: #1e2a3a;
+            --border-color: #2d3748;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --error: #f56565;
         }
-        body {
+
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%);
-            font-family: 'Inter', 'Montserrat', Arial, sans-serif;
-            color: var(--text);
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Inter', 'Roboto', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
         header {
-            background: linear-gradient(90deg, var(--primary) 60%, var(--accent) 100%);
-            color: #fff;
-            padding: 1.2rem 2rem;
+            background: var(--gradient-main);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: var(--shadow);
-            position: relative;
         }
+
         .logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2rem;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.8rem;
             font-weight: 700;
-            letter-spacing: 1px;
+            color: var(--text-primary);
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .logo:before {
-            content: "🎮";
-            font-size: 2.2rem;
-            margin-right: 0.5rem;
+
+        .logo::before {
+            content: "⚡";
+            font-size: 2rem;
+            background: var(--gradient-heat);
+            background-size: 200% 200%;
+            animation: gradient-shift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        /* Десктопная навигация */
-        .desktop-nav {
-            display: flex;
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
-        .desktop-nav ul {
+
+        /* Navigation */
+        .nav-menu {
+            display: flex;
             list-style: none;
-            display: flex;
             gap: 2rem;
-            margin: 0;
-            padding: 0;
+            align-items: center;
         }
-        .desktop-nav ul li a {
-            color: #fff;
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a.active {
+            color: var(--accent-orange);
+            background: rgba(233,69,96,0.1);
+        }
+
+        /* Auth Section */
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-balance {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .auth-btn {
+            background: var(--gradient-card);
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1.1rem;
-            transition: color 0.2s;
-        }
-        .desktop-nav ul li a:hover {
-            color: var(--secondary);
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
-        /* Мобильная навигация */
-        .mobile-nav {
-            display: none;
+        .auth-btn:hover {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            transform: translateY(-1px);
         }
-        .hamburger {
+
+        .auth-btn.primary {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        /* Mobile Menu */
+        .mobile-toggle {
             display: none;
             flex-direction: column;
             cursor: pointer;
             padding: 0.5rem;
-            z-index: 1001;
         }
-        .hamburger span {
+
+        .mobile-toggle span {
             width: 25px;
             height: 3px;
-            background: #fff;
+            background: var(--text-primary);
             margin: 3px 0;
             transition: 0.3s;
             border-radius: 2px;
         }
-        .hamburger.active span:nth-child(1) {
-            transform: rotate(-45deg) translate(-5px, 6px);
-        }
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-        .hamburger.active span:nth-child(3) {
-            transform: rotate(45deg) translate(-5px, -6px);
-        }
 
-        /* Боковая шторка */
-        .mobile-sidebar {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 280px;
-            height: 100vh;
-            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
-            z-index: 1000;
-            transition: right 0.3s ease;
-            padding: 2rem 1.5rem;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
-        }
-        .mobile-sidebar.active {
-            right: 0;
-        }
-        .mobile-sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        .mobile-sidebar-logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-        }
-        .close-sidebar {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-        }
-        .mobile-nav-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .mobile-nav-links li {
-            margin-bottom: 1rem;
-        }
-        .mobile-nav-links li a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: block;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
-        .mobile-nav-links li a:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .mobile-auth-section {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255,255,255,0.2);
-        }
-
-        /* Overlay для закрытия меню */
-        .mobile-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        .mobile-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .auth-buttons {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-        .auth-button {
-            background: linear-gradient(90deg, var(--accent), var(--primary));
-            color: #fff;
-            border-radius: 8px;
-            padding: 0.5rem 1.2rem;
-            font-weight: 700;
-            font-size: 1rem;
-            border: none;
-            transition: background 0.2s, transform 0.2s;
-            cursor: pointer;
-            text-decoration: none;
-            margin-left: 0.2rem;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.08);
-        }
-        .auth-button.login {
-            background: linear-gradient(90deg, #3b82f6, #a21caf);
-        }
-        .auth-button.register {
-            background: linear-gradient(90deg, #10b981, #f59e42);
-        }
-        .auth-button.logout {
-            background: linear-gradient(90deg, #ef4444, #f59e42);
-        }
-        .auth-button:hover {
-            transform: scale(1.07);
-            filter: brightness(1.1);
-        }
-        .user-balance {
-            background: #fff;
-            color: var(--primary);
-            font-weight: 700;
-            border-radius: 6px;
-            padding: 0.3rem 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 1rem;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.08);
-        }
-        .navbar-avatar {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6 60%, #f59e42 100%);
-            overflow: hidden;
-            margin-left: 0.5rem;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.13);
-            border: 2px solid #fff;
-        }
-        .navbar-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        .navbar-avatar-initials {
-            color: #fff;
-            font-size: 1.3rem;
-            font-weight: 700;
-            font-family: 'Montserrat', sans-serif;
-        }
+        /* Main Content */
         main {
-            max-width: 900px;
-            width: 100%;
-            margin: 2rem auto;
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 2rem;
-            box-sizing: border-box;
+            min-height: calc(100vh - 200px);
         }
+
+        /* Messages */
         .messages {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
+
         .message {
             padding: 1rem 1.5rem;
             border-radius: 8px;
             margin-bottom: 1rem;
-            font-size: 1.1rem;
-            background: #e0f2fe;
-            color: #0369a1;
-            box-shadow: var(--shadow);
+            border-left: 4px solid;
+            font-weight: 500;
         }
+
+        .message.success {
+            background: rgba(72,187,120,0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(245,101,101,0.1);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .message.warning {
+            background: rgba(237,137,54,0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        /* Footer */
         footer {
-            background: var(--primary);
-            color: #fff;
+            background: var(--primary-dark);
+            padding: 2rem 0 1rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
             text-align: center;
-            padding: 1.2rem 0;
-            margin-top: 3rem;
-            font-size: 1rem;
-            letter-spacing: 1px;
         }
+
         .footer-links {
-            margin-bottom: 0.7rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
+
         .footer-links a {
-            color: #fff;
+            color: var(--text-muted);
             text-decoration: none;
-            margin: 0 1.2rem;
-            font-weight: 600;
-            transition: color 0.2s;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
         }
+
         .footer-links a:hover {
-            color: var(--accent);
+            color: var(--accent-orange);
         }
 
-        /* Мобильная адаптивность */
-        @media (max-width: 900px) {
-            main {
-                padding: 1.5rem 1rem;
-                max-width: 95vw;
-            }
-            header {
-                padding: 1rem 1.5rem;
-            }
+        .copyright {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 1rem;
         }
 
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .desktop-nav {
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .nav-menu {
                 display: none;
             }
-            .hamburger {
+
+            .mobile-toggle {
                 display: flex;
             }
-            .mobile-nav {
-                display: block;
-            }
-            header {
+
+            main {
                 padding: 1rem;
             }
-            .logo {
-                font-size: 1.5rem;
-            }
-            .auth-buttons {
-                gap: 0.8rem;
-            }
-            .auth-button {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.9rem;
-            }
-            .user-balance {
-                font-size: 0.9rem;
-                padding: 0.2rem 0.6rem;
-            }
-            .navbar-avatar {
-                width: 32px;
-                height: 32px;
-            }
-            main {
-                padding: 1rem 0.5rem;
-                margin: 1rem auto;
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
             }
         }
 
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 1.2rem;
-            }
-            .mobile-sidebar {
-                width: 250px;
-            }
-            .auth-button {
-                padding: 0.3rem 0.6rem;
-                font-size: 0.8rem;
-            }
+        /* Utility Classes */
+        .gradient-text {
+            background: var(--gradient-heat);
+            background-size: 200% 200%;
+            animation: gradient-shift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: var(--gradient-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            background: var(--gradient-card);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            transform: translateY(-2px);
+            color: var(--text-primary);
+        }
+
+        .btn.primary {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border-color: var(--border-color);
         }
     </style>
-    {% block static %} {% endblock %}
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Overlay для закрытия мобильного меню -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
-
-    <!-- Боковая шторка -->
-    <div class="mobile-sidebar" id="mobileSidebar">
-        <div class="mobile-sidebar-header">
-            <div class="mobile-sidebar-logo">🎮 UmbrellaBet</div>
-            <button class="close-sidebar" id="closeSidebar">✕</button>
-        </div>
-        <ul class="mobile-nav-links">
-            <li><a href="{% url 'matches:matches_list' %}">Главная</a></li>
-            <li><a href="{% url 'matches:matches_list' %}?sport=cs2">CS2</a></li>
-            <li><a href="{% url 'matches:matches_list' %}?sport=dota2">Dota 2</a></li>
-            <li><a href="#">Линия</a></li>
-            <li><a href="#">Live</a></li>
-            <li><a href="#">Результаты</a></li>
-            <li><a href="#">Новости</a></li>
-            <li><a href="#">Промо</a></li>
-        </ul>
-        <div class="mobile-auth-section">
-            {% if user.is_authenticated %}
-                <div style="color: #fff; margin-bottom: 1rem;">
-                    <strong>{{ user.username }}</strong><br>
-                    Баланс: {{ user.profile.balance }} 🪙
-                </div>
-                <a href="{% url 'accounts:profile' %}" class="auth-button" style="display: block; text-align: center; margin-bottom: 0.5rem;">Профиль</a>
-                <a href="{% url 'accounts:logout' %}" class="auth-button logout" style="display: block; text-align: center;">Выйти</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}" class="auth-button login" style="display: block; text-align: center; margin-bottom: 0.5rem;">Войти</a>
-                <a href="{% url 'accounts:register' %}" class="auth-button register" style="display: block; text-align: center;">Регистрация</a>
-            {% endif %}
-        </div>
-    </div>
-
     <header>
-        <div class="logo">Um8rell4<span style="color:#f59e42;">Bet</span></div>
+        <div class="header-container">
+            <a href="{% url 'matches:matches_list' %}" class="logo">
+                UmbrellaBet
+            </a>
 
-        <!-- Десктопная навигация -->
-        <nav class="desktop-nav">
-            <ul>
-                <li><a href="{% url 'matches:matches_list' %}">Главная</a></li>
-                <li><a href="{% url 'matches:matches_list' %}?sport=cs2">CS2</a></li>
-                <li><a href="{% url 'matches:matches_list' %}?sport=dota2">Dota 2</a></li>
-                <li><a href="#">Линия</a></li>
-                <li><a href="#">Live</a></li>
-                <li><a href="#">Результаты</a></li>
-                <li><a href="#">Новости</a></li>
-                <li><a href="#">Промо</a></li>
-            </ul>
-        </nav>
+            <nav class="nav-menu">
+                <a href="{% url 'matches:matches_list' %}" class="active">Линия</a>
+                <a href="{% url 'matches:matches_list' %}?sport=cs-go">CS2</a>
+                <a href="{% url 'matches:matches_list' %}?sport=dota2">Dota 2</a>
+                <a href="#">Live</a>
+                <a href="#">Результаты</a>
+                <a href="#">Промо</a>
+            </nav>
 
-        <!-- Десктопные кнопки авторизации -->
-        <div class="auth-buttons desktop-nav">
-            {% if user.is_authenticated %}
-                <div class="user-balance">
-                    {{ user.profile.balance }} <img src="{% static 'account/123.png' %}" alt="coin" width="15">
-                </div>
-                <a href="{% url 'accounts:profile' %}" class="navbar-avatar" title="Мой профиль">
-                    {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" alt="Аватар {{ user.username }}">
-                    {% else %}
-                        <div class="navbar-avatar-initials">{{ user.username|first|upper }}</div>
-                    {% endif %}
-                </a>
-                <a href="{% url 'accounts:logout' %}" class="auth-button logout">Выйти</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}" class="auth-button login">Войти</a>
-                <a href="{% url 'accounts:register' %}" class="auth-button register">Регистрация</a>
-            {% endif %}
-        </div>
+            <div class="auth-section">
+                {% if user.is_authenticated %}
+                    <div class="user-balance">
+                        {{ user.profile.balance }} ₽
+                    </div>
+                    <a href="{% url 'accounts:profile' %}" class="auth-btn">
+                        {{ user.username }}
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="auth-btn">
+                        Выход
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="auth-btn">
+                        Вход
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="auth-btn primary">
+                        Регистрация
+                    </a>
+                {% endif %}
+            </div>
 
-        <!-- Гамбургер меню для мобильных -->
-        <div class="hamburger mobile-nav" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
+            <div class="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </header>
 
@@ -451,48 +388,20 @@
     </main>
 
     <footer>
-        <div class="footer-links">
-            <a href="#">О нас</a>
-            <a href="#">Правила</a>
-            <a href="#">Ответственная игра</a>
-            <a href="#">Контакты</a>
-            <a href="#">Поддержка</a>
-        </div>
-        <div class="copyright">
-            © {% now "Y" %} UmbrellaBet. Все права защищены. Для школьников и весёлых ставок!
+        <div class="footer-container">
+            <div class="footer-links">
+                <a href="#">О компании</a>
+                <a href="#">Правила</a>
+                <a href="#">Ответственная игра</a>
+                <a href="#">Контакты</a>
+                <a href="#">Поддержка</a>
+                <a href="#">Мобильное приложение</a>
+            </div>
+            <div class="copyright">
+                © {% now "Y" %} UmbrellaBet. Лицензия №0000. Возрастное ограничение 18+
+            </div>
         </div>
     </footer>
-
-    <script>
-        // Мобильное меню
-        const hamburger = document.getElementById('hamburger');
-        const mobileSidebar = document.getElementById('mobileSidebar');
-        const mobileOverlay = document.getElementById('mobileOverlay');
-        const closeSidebar = document.getElementById('closeSidebar');
-
-        function openMobileMenu() {
-            hamburger.classList.add('active');
-            mobileSidebar.classList.add('active');
-            mobileOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMobileMenu() {
-            hamburger.classList.remove('active');
-            mobileSidebar.classList.remove('active');
-            mobileOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        hamburger.addEventListener('click', openMobileMenu);
-        closeSidebar.addEventListener('click', closeMobileMenu);
-        mobileOverlay.addEventListener('click', closeMobileMenu);
-
-        // Закрытие меню при клике на ссылку
-        document.querySelectorAll('.mobile-nav-links a').forEach(link => {
-            link.addEventListener('click', closeMobileMenu);
-        });
-    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

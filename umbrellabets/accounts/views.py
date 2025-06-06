@@ -17,6 +17,7 @@ from django.utils.html import strip_tags
 from django.conf import settings
 import uuid
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 
 def register_view(request):
@@ -251,8 +252,12 @@ def logout_view(request):
 
 @login_required  # Декоратор, который запрещает доступ к странице без авторизации
 def profile_view(request):
-    # Отображаем страницу профиля
-    return render(request, 'accounts/profile.html')
+    """Профиль пользователя"""
+    # Обновить статистику при каждом просмотре профиля
+    request.user.profile.update_betting_stats()
+
+    context = {}
+    return render(request, 'accounts/profile.html', context)
 
 
 @login_required
@@ -297,3 +302,34 @@ class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
     def form_valid(self, form):
         # Можно добавить логику проверки, существует ли пользователь с таким email
         return super().form_valid(form)
+
+
+def leaderboard(request):
+    """Рейтинг игроков"""
+    from django.db.models import Sum, Count, F
+
+    # Топ игроков по выигрышам
+    top_winners = UserProfile.objects.filter(
+        user__bets__status='won'
+    ).annotate(
+        total_winnings=Sum('user__bets__potential_win'),
+        total_bets=Count('user__bets'),
+        won_bets=Count('user__bets', filter=models.Q(user__bets__status='won'))
+    ).order_by('-total_winnings')[:20]
+
+    # Топ по проценту побед
+    top_accuracy = UserProfile.objects.filter(
+        user__bets__isnull=False
+    ).annotate(
+        total_bets=Count('user__bets'),
+        won_bets=Count('user__bets', filter=models.Q(user__bets__status='won')),
+        win_percentage=F('won_bets') * 100.0 / F('total_bets')
+    ).filter(total_bets__gte=5).order_by('-win_percentage')[:20]
+
+    context = {
+        'top_winners': top_winners,
+        'top_accuracy': top_accuracy
+    }
+    return render(request, 'accounts/leaderboard.html', context)
+
+

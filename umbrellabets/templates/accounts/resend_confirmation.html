@@ -3,127 +3,406 @@
 {% block title %}Повторная отправка письма | UmbrellaBet{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <h2 class="auth-title">Повторная отправка письма <span class="emoji">📧</span></h2>
+<div class="resend-email-container">
+    <!-- Back Button -->
+    <a href="{% url 'accounts:login' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Назад к входу
+    </a>
 
-    <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem;">
-        Введите email, указанный при регистрации.<br>
-        Мы отправим вам письмо для подтверждения аккаунта.
-    </p>
-
-    <form method="post" class="auth-form">
-        {% csrf_token %}
-
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email"
-                   name="email"
-                   id="email"
-                   required
-                   placeholder="Введите ваш email"
-                   class="form-control">
+    <!-- Resend Email Card -->
+    <div class="resend-email-card">
+        <div class="card-header">
+            <div class="resend-icon">
+                <i class="fas fa-envelope-open"></i>
+            </div>
+            <h2 class="resend-title">Повторная отправка письма</h2>
+            <p class="resend-subtitle">Отправим новое письмо для подтверждения аккаунта</p>
         </div>
 
-        <button type="submit" class="auth-btn"><span style="font-size:1.2rem;">🔄</span> Отправить письмо</button>
-    </form>
+        <form method="post" class="resend-form">
+            {% csrf_token %}
 
-    <div class="auth-link">
-        <a href="{% url 'accounts:login' %}">← Вернуться к входу</a>
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i>
+                    Email адрес
+                </label>
+                <input type="email"
+                       name="email"
+                       id="email"
+                       required
+                       placeholder="Введите ваш email"
+                       class="form-control">
+
+                <div class="field-hint">
+                    <i class="fas fa-info-circle"></i>
+                    Используйте email, указанный при регистрации
+                </div>
+            </div>
+
+            <button type="submit" class="resend-btn">
+                <i class="fas fa-paper-plane"></i>
+                Отправить письмо
+            </button>
+        </form>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <h4><i class="fas fa-lightbulb"></i> Полезная информация</h4>
+            <div class="info-items">
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <strong>Время доставки</strong>
+                        <span>Письмо придёт в течение 5 минут</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>
+                        <strong>Безопасность</strong>
+                        <span>Ссылка действительна 24 часа</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-search"></i>
+                    <div>
+                        <strong>Не нашли письмо?</strong>
+                        <span>Проверьте папку "Спам"</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternative Actions -->
+        <div class="alternative-actions">
+            <div class="action-item">
+                <span>Уже подтвердили email?</span>
+                <a href="{% url 'accounts:login' %}" class="action-link">Войти в аккаунт</a>
+            </div>
+            <div class="action-item">
+                <span>Нужна помощь?</span>
+                <a href="mailto:support@umbrellanet.com" class="action-link">Написать в поддержку</a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-body {
-    background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%);
+.resend-email-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
 }
-.auth-container {
-    max-width: 420px;
-    margin: 3rem auto;
-    background: #fff;
-    border-radius: 22px;
-    box-shadow: 0 6px 32px rgba(59,130,246,0.10);
-    padding: 2.5rem 2rem 2rem 2rem;
+
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
-.auth-title {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #3b82f6;
+
+.back-link:hover {
+    color: var(--accent-orange);
+}
+
+.resend-email-card {
+    background: var(--gradient-card);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.card-header {
     text-align: center;
     margin-bottom: 2rem;
-    letter-spacing: 1px;
+}
+
+.resend-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--accent-orange));
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
     justify-content: center;
-}
-.emoji {
+    margin: 0 auto 1.5rem;
+    color: white;
     font-size: 2rem;
+    animation: emailBounce 2s ease-in-out infinite;
 }
-.auth-form .form-group {
-    margin-bottom: 1.2rem;
+
+@keyframes emailBounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
 }
-.auth-form label {
-    display: block;
-    margin-bottom: 0.3rem;
-    color: #64748b;
-    font-weight: 600;
-}
-.auth-form input {
-    width: 100%;
-    padding: 0.7rem;
-    border-radius: 8px;
-    border: 1.5px solid #dbeafe;
-    font-size: 1.05rem;
-    background: #f8fafc;
-    margin-bottom: 0.3rem;
-    transition: border 0.2s;
-}
-.auth-form input:focus {
-    border: 1.5px solid #3b82f6;
-    outline: none;
-}
-.auth-btn {
-    background: linear-gradient(90deg, #3b82f6, #f59e42);
-    color: #fff;
-    border-radius: 8px;
-    padding: 0.7rem 2rem;
+
+.resend-title {
+    font-size: 1.8rem;
     font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
-    transition: background 0.2s, transform 0.2s;
-    cursor: pointer;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.resend-subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-control {
     width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-orange);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(233,69,96,0.1);
+}
+
+.field-hint {
+    color: var(--text-muted);
+    font-size: 0.85rem;
     margin-top: 0.5rem;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Resend Button */
+.resend-btn {
+    width: 100%;
+    background: var(--accent-orange);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    margin-bottom: 2rem;
 }
-.auth-btn:hover {
-    background: linear-gradient(90deg, #a21caf, #3b82f6);
-    transform: scale(1.04);
+
+.resend-btn:hover {
+    background: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233,69,96,0.3);
 }
-.auth-link {
-    text-align: center;
-    margin-top: 1.2rem;
+
+/* Info Section */
+.info-section {
+    background: var(--bg-input);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.info-section h4 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
     font-size: 1rem;
-}
-.auth-link a {
-    color: #3b82f6;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-items {
+    display: grid;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.info-item i {
+    width: 20px;
+    color: var(--primary-blue);
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.info-item strong {
+    display: block;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.info-item span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Alternative Actions */
+.alternative-actions {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.action-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.action-link {
+    color: var(--accent-orange);
     text-decoration: none;
-    transition: color 0.2s;
+    font-weight: 600;
 }
-.auth-link a:hover {
-    color: #a21caf;
+
+.action-link:hover {
+    text-decoration: underline;
 }
-@media (max-width: 600px) {
-    .auth-container { padding: 1rem; }
-    .auth-title { font-size: 1.3rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .resend-email-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+
+    .resend-email-card {
+        padding: 1.5rem;
+    }
+
+    .resend-title {
+        font-size: 1.5rem;
+    }
+
+    .resend-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .resend-email-card {
+        padding: 1rem;
+    }
+
+    .info-section {
+        padding: 1rem;
+    }
+
+    .action-item {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const resendBtn = document.querySelector('.resend-btn');
+    const form = document.querySelector('.resend-form');
+    const emailInput = document.getElementById('email');
+
+    // Form submission
+    if (form && resendBtn) {
+        form.addEventListener('submit', function() {
+            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+            resendBtn.disabled = true;
+        });
+    }
+
+    // Email validation
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (email && !emailRegex.test(email)) {
+                this.style.borderColor = 'var(--error)';
+            } else if (email) {
+                this.style.borderColor = 'var(--success)';
+            } else {
+                this.style.borderColor = 'var(--border-color)';
+            }
+        });
+    }
+
+    // Анимация появления карточки
+    const card = document.querySelector('.resend-email-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+
+    setTimeout(() => {
+        card.style.transition = 'all 0.6s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+
+    // Анимация информационных элементов
+    const infoItems = document.querySelectorAll('.info-item');
+    infoItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+
+        setTimeout(() => {
+            item.style.transition = 'all 0.4s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateX(0)';
+        }, 300 + (index * 100));
+    });
+});
+</script>
 {% endblock %}

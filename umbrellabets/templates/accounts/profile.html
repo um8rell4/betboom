@@ -2,146 +2,647 @@
 {% load static %}
 
 {% block title %}Профиль | UmbrellaBet{% endblock %}
-{% block static %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-{% endblock %}
 
 {% block content %}
-<div class="profile-main-card">
+<div class="profile-container">
+    <!-- Email Confirmation Alert -->
     {% if not user.profile.email_confirmed %}
-    <div class="profile-alert">
-        <span class="profile-alert-emoji">⚠️</span>
-        <div>
-            <strong>Ваш email не подтвержден!</strong>
-            <p>Подтвердите email, чтобы получить все возможности.</p>
-            <a href="{% url 'accounts:resend-confirmation' %}" class="profile-btn yellow">
-                <i class="fas fa-envelope"></i> Отправить письмо повторно
+    <div class="alert-card">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+            <h4>Email не подтвержден</h4>
+            <p>Подтвердите email для полного доступа к функциям</p>
+            <a href="{% url 'accounts:resend-confirmation' %}" class="btn secondary">
+                <i class="fas fa-envelope"></i> Отправить повторно
             </a>
         </div>
     </div>
     {% endif %}
 
-    <div class="profile-header-block">
+    <!-- Profile Header -->
+    <div class="profile-header">
         <div class="profile-avatar">
             {% if user.profile.avatar %}
                 <img src="{{ user.profile.avatar.url }}" alt="Аватар {{ user.username }}">
             {% else %}
-                <span class="profile-avatar-initial">{{ user.username|slice:":1"|upper }}</span>
+                <div class="avatar-placeholder">{{ user.username|slice:":1"|upper }}</div>
             {% endif %}
+            <div class="avatar-status online"></div>
         </div>
-        <div class="profile-user-info">
-            <h1>{{ user.username }} <span class="profile-emoji">🎮</span></h1>
+
+        <div class="profile-info">
+            <h1 class="profile-name">{{ user.username }}</h1>
             <div class="profile-email">{{ user.email }}</div>
-            <div class="profile-balance">
-                <span>Баланс:</span>
-                <span class="profile-balance-value">{{ user.profile.balance }} <img src="{% static 'account/123.png' %}" alt="coin" width="22"></span>
-                <button class="profile-btn green">Пополнить</button>
+            <div class="profile-stats-inline">
+                <div class="stat-item">
+                    <span class="stat-value">{{ user.bets.count }}</span>
+                    <span class="stat-label">Ставок</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ user.profile.win_rate }}%</span>
+                    <span class="stat-label">Успех</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ user.profile.balance }}</span>
+                    <span class="stat-label">Баланс ₽</span>
+                </div>
             </div>
-            <div class="profile-referral">
-                <span class="profile-ref-label">Реферальный код:</span>
-                <span class="profile-ref-code" id="referralCode">{{ user.profile.referral_code }}</span>
-                <button class="profile-btn blue" onclick="copyReferralCode(this)">
-                    <i class="fas fa-copy"></i> Копировать
-                </button>
+        </div>
+
+        <div class="profile-actions">
+            <button class="btn primary">
+                <i class="fas fa-plus"></i> Пополнить
+            </button>
+            <a href="{% url 'accounts:edit_profile' %}" class="btn secondary">
+                <i class="fas fa-edit"></i> Редактировать
+            </a>
+        </div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+        <div class="balance-header">
+            <h3>Баланс счета</h3>
+            <div class="balance-amount">{{ user.profile.balance }} ₽</div>
+        </div>
+        <div class="balance-actions">
+            <button class="btn primary">Пополнить счет</button>
+            <button class="btn secondary">Вывести средства</button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon win">🏆</div>
+            <div class="stat-content">
+                <div class="stat-number">{{ user.profile.won_bets }}</div>
+                <div class="stat-title">Выигрышных ставок</div>
             </div>
-            <a href="{% url 'accounts:edit_profile' %}" class="profile-btn purple"><i class="fas fa-user-edit"></i> Редактировать</a>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon total">🎲</div>
+            <div class="stat-content">
+                <div class="stat-number">{{ user.profile.total_bets }}</div>
+                <div class="stat-title">Всего ставок</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon rate">📊</div>
+            <div class="stat-content">
+                <div class="stat-number">{{ user.profile.win_rate }}%</div>
+                <div class="stat-title">Процент успеха</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon profit">💰</div>
+            <div class="stat-content">
+                <div class="stat-number">{{ user.profile.total_winnings }} ₽</div>
+                <div class="stat-title">Общий выигрыш</div>
+            </div>
         </div>
     </div>
 
-    <div class="profile-stats-cards">
-        <div class="profile-stat-card">
-            <div class="profile-stat-title">Выиграно ставок</div>
-            <div class="profile-stat-value">{{ user.profile.wins }} 🏆</div>
-        </div>
-        <div class="profile-stat-card">
-            <div class="profile-stat-title">Всего ставок</div>
-            <div class="profile-stat-value">{{ user.profile.total_bets }} 🎲</div>
-        </div>
-        <div class="profile-stat-card">
-            <div class="profile-stat-title">Процент успеха</div>
-            <div class="profile-stat-value">{{ user.profile.win_rate }}%</div>
-        </div>
-        <div class="profile-stat-card">
-            <div class="profile-stat-title">Сумма выигрышей</div>
-            <div class="profile-stat-value">{{ user.profile.total_won }} <img src="{% static 'account/123.png' %}" alt="coin" width="18"></div>
+
+    <!-- Referral Program -->
+    <div class="referral-card">
+        <h3>Реферальная программа</h3>
+        <p>Приглашайте друзей и получайте бонусы</p>
+        <div class="referral-code-section">
+            <div class="referral-code" id="referralCode">{{ user.profile.referral_code }}</div>
+            <button class="btn secondary" onclick="copyReferralCode(this)">
+                <i class="fas fa-copy"></i> Копировать
+            </button>
         </div>
     </div>
 
-    <div class="profile-section">
-        <h2 class="profile-section-title">Последние ставки</h2>
-        <div class="table-wrapper">
-            <table class="profile-table">
-                <thead>
-                    <tr>
-                        <th>Матч</th>
-                        <th>Ставка</th>
-                        <th>Коэффициент</th>
-                        <th>Сумма</th>
-                        <th>Возможный выигрыш</th>
-                        <th>Статус</th>
-                        <th>Дата</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for bet in user.bets.all|slice:":10" %}
-                    <tr>
-                        <td data-label="Матч">{{ bet.match.team1 }} vs {{ bet.match.team2 }}</td>
-                        <td data-label="Ставка">{{ bet.get_bet_type_display }}</td>
-                        <td data-label="Коэффициент">{{ bet.odds }}</td>
-                        <td data-label="Сумма">{{ bet.amount }} ₽</td>
-                        <td data-label="Возможный выигрыш">{{ bet.possible_win }} ₽</td>
-                        <td data-label="Статус" class="bet-status {{ bet.status }}">{{ bet.get_status_display }}</td>
-                        <td data-label="Дата">{{ bet.created_at|date:"d.m.Y H:i" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" style="text-align: center;">Вы еще не делали ставок</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Recent Bets -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3>Последние ставки</h3>
+            <a href="#" class="view-all">Показать все</a>
+        </div>
+
+        <div class="bets-list">
+            {% for bet in user.bets.all|slice:":5" %}
+            <div class="bet-item">
+                <div class="bet-match">
+                    <div class="match-teams">{{ bet.match.home_team }} vs {{ bet.match.away_team }}</div>
+                    <div class="match-date">{{ bet.created_at|date:"d.m.Y H:i" }}</div>
+                </div>
+
+                <div class="bet-details">
+                    <div class="bet-outcome">{{ bet.get_outcome_display }}</div>
+                    <div class="bet-odds">{{ bet.odds }}</div>
+                </div>
+
+                <div class="bet-amount">
+                    <div class="amount">{{ bet.amount }} ₽</div>
+                    <div class="potential">{{ bet.potential_win }} ₽</div>
+                </div>
+
+                <div class="bet-status">
+                    <span class="status-badge {{ bet.status }}">{{ bet.get_status_display }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <h4>Ставок пока нет</h4>
+                <p>Сделайте первую ставку на киберспорт</p>
+                <a href="{% url 'matches:matches_list' %}" class="btn primary">Перейти к матчам</a>
+            </div>
+            {% endfor %}
         </div>
     </div>
 
-    <div class="profile-section">
-        <h2 class="profile-section-title">История транзакций</h2>
-        <div class="table-wrapper">
-            <table class="profile-table">
-                <thead>
-                    <tr>
-                        <th>Тип</th>
-                        <th>Сумма</th>
-                        <th>Дата</th>
-                        <th>Статус</th>
-                        <th>Комментарий</th>
-                        <th>ID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for transaction in user.transactions.all|slice:":5" %}
-                    <tr>
-                        <td data-label="Тип">{{ transaction.get_transaction_type_display }}</td>
-                        <td data-label="Сумма">{{ transaction.amount }} ₽</td>
-                        <td data-label="Дата">{{ transaction.created_at|date:"d.m.Y H:i" }}</td>
-                        <td data-label="Статус" class="transaction-status {{ transaction.status }}">{{ transaction.get_status_display }}</td>
-                        <td data-label="Комментарий">{{ transaction.comment|default:"" }}</td>
-                        <td data-label="ID">
-                            <button class="profile-btn blue" onclick="copyTransactionId(this, '{{ transaction.transaction_id }}')">
-                                <i class="fas fa-copy"></i> Копировать
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" style="text-align: center;">Нет транзакций</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Transaction History -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3>История транзакций</h3>
+            <a href="#" class="view-all">Показать все</a>
+        </div>
+
+        <div class="transactions-list">
+            {% for transaction in user.transactions.all|slice:":5" %}
+            <div class="transaction-item">
+                <div class="transaction-icon {{ transaction.transaction_type }}">
+                    {% if transaction.transaction_type == 'deposit' %}💳
+                    {% elif transaction.transaction_type == 'withdraw' %}🏦
+                    {% elif transaction.transaction_type == 'bet' %}🎲
+                    {% elif transaction.transaction_type == 'win' %}🏆
+                    {% else %}💰
+                    {% endif %}
+                </div>
+
+                <div class="transaction-details">
+                    <div class="transaction-type">{{ transaction.get_transaction_type_display }}</div>
+                    <div class="transaction-date">{{ transaction.created_at|date:"d.m.Y H:i" }}</div>
+                </div>
+
+                <div class="transaction-amount {{ transaction.transaction_type }}">
+                    {% if transaction.transaction_type == 'bet' %} {% elif transaction.transaction_type == 'win' %}+{% endif %}{{ transaction.amount }} ₽
+                </div>
+
+                <div class="transaction-status">
+                    <span class="status-badge {{ transaction.status }}">{{ transaction.get_status_display }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h4>Транзакций пока нет</h4>
+                <p>История операций будет отображаться здесь</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_css %}
+<style>
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    gap: 2rem;
+}
+
+/* Alert Card */
+.alert-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--warning);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.alert-icon {
+    font-size: 2rem;
+}
+
+.alert-content h4 {
+    color: var(--warning);
+    margin: 0 0 0.5rem 0;
+}
+
+.alert-content p {
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+}
+
+/* Profile Header */
+.profile-header {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 2rem;
+    align-items: center;
+    border: 1px solid var(--border-color);
+}
+
+.profile-avatar {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--accent-orange);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-heat);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.avatar-status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid var(--bg-card);
+}
+
+.avatar-status.online {
+    background: var(--success);
+}
+
+.profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.profile-email {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.profile-stats-inline {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-orange);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Balance Card */
+.balance-card {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.balance-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-orange);
+}
+
+.balance-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    background: var(--gradient-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--accent-orange);
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.win { background: rgba(72,187,120,0.1); }
+.stat-icon.total { background: rgba(59,130,246,0.1); }
+.stat-icon.rate { background: rgba(245,158,66,0.1); }
+.stat-icon.profit { background: rgba(16,185,129,0.1); }
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-title {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Referral Card */
+.referral-card {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.referral-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.referral-card p {
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem 0;
+}
+
+.referral-code-section {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.referral-code {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--accent-orange);
+    flex: 1;
+}
+
+/* Section Cards */
+.section-card {
+    background: var(--gradient-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.view-all {
+    color: var(--accent-orange);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Bets List */
+.bet-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.bet-item:last-child {
+    border-bottom: none;
+}
+
+.match-teams {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.match-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.bet-outcome {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.bet-odds {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.amount {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.potential {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.pending {
+    background: rgba(245,158,66,0.1);
+    color: var(--warning);
+}
+
+.status-badge.won, .status-badge.completed {
+    background: rgba(72,187,120,0.1);
+    color: var(--success);
+}
+
+.status-badge.lost, .status-badge.failed {
+    background: rgba(245,101,101,0.1);
+    color: var(--error);
+}
+
+/* Transactions */
+.transaction-item {
+    display: grid;
+    grid-template-columns: auto 2fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input);
+}
+
+.transaction-type {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.transaction-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.transaction-amount {
+    font-weight: 700;
+    text-align: right;
+}
+
+.transaction-amount.bet {
+    color: var(--error);
+}
+
+.transaction-amount.win {
+    color: var(--success);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+    margin: 0 0 1.5rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 1rem;
+    }
+
+    .profile-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .profile-stats-inline {
+        justify-content: center;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bet-item,
+    .transaction-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        text-align: left;
+    }
+
+    .balance-actions {
+        flex-direction: column;
+    }
+
+    .referral-code-section {
+        flex-direction: column;
+    }
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -151,361 +652,15 @@ function copyReferralCode(btn) {
     navigator.clipboard.writeText(code).then(() => {
         const original = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
-        btn.classList.add('copied');
+        btn.style.background = 'var(--success)';
         btn.disabled = true;
+
         setTimeout(() => {
             btn.innerHTML = original;
-            btn.classList.remove('copied');
+            btn.style.background = '';
             btn.disabled = false;
-        }, 1800);
-    });
-}
-function copyTransactionId(btn, transactionId) {
-    navigator.clipboard.writeText(transactionId).then(() => {
-        const original = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
-        btn.classList.add('copied');
-        btn.disabled = true;
-        setTimeout(() => {
-            btn.innerHTML = original;
-            btn.classList.remove('copied');
-            btn.disabled = false;
-        }, 1800);
+        }, 2000);
     });
 }
 </script>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-body {
-    background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%);
-}
-.profile-main-card {
-    max-width: 950px;
-    width: 100%;
-    margin: 2.5rem auto;
-    background: #fff;
-    border-radius: 22px;
-    box-shadow: 0 6px 32px rgba(59,130,246,0.11);
-    padding: 2.5rem 2rem 2rem 2rem;
-    box-sizing: border-box;
-}
-.profile-alert {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    background: #fff7e6;
-    border: 2px solid #f59e42;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-}
-.profile-alert-emoji {
-    font-size: 2.5rem;
-}
-.profile-header-block {
-    display: flex;
-    gap: 2.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-}
-.profile-avatar {
-    width: 125px;
-    height: 125px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6 60%, #f59e42 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 12px rgba(59,130,246,0.15);
-    border: 5px solid #fff;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-.profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-.profile-avatar-initial {
-    color: #fff;
-    font-size: 3.5rem;
-    font-weight: 700;
-    font-family: 'Montserrat', sans-serif;
-}
-.profile-user-info {
-    flex: 1 1 300px;
-    min-width: 0;
-}
-.profile-user-info h1 {
-    margin: 0 0 0.5rem 0;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.1rem;
-    font-weight: 700;
-    color: #3b82f6;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-.profile-emoji {
-    font-size: 1.7rem;
-}
-.profile-email {
-    color: #64748b;
-    margin-bottom: 1rem;
-    word-break: break-word;
-}
-.profile-balance {
-    margin: 1rem 0 1.2rem 0;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #22223b;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-}
-.profile-balance-value {
-    color: #f59e42;
-    font-weight: 700;
-    font-size: 1.2rem;
-}
-.profile-referral {
-    background: #f3e8ff;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    margin-bottom: 1.2rem;
-    font-size: 1rem;
-    flex-wrap: wrap;
-}
-.profile-ref-label {
-    color: #a21caf;
-    font-weight: 600;
-}
-.profile-ref-code {
-    font-family: 'Courier New', monospace;
-    color: #3b82f6;
-    font-weight: 700;
-    word-break: break-all;
-}
-.profile-btn {
-    border: none;
-    border-radius: 8px;
-    padding: 0.5rem 1.2rem;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    margin: 0.2rem;
-    transition: background 0.2s, transform 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    text-decoration: none;
-}
-.profile-btn.green { background: linear-gradient(90deg, #10b981, #3b82f6); color: #fff; }
-.profile-btn.blue { background: linear-gradient(90deg, #3b82f6, #a21caf); color: #fff; }
-.profile-btn.purple { background: linear-gradient(90deg, #a21caf, #3b82f6); color: #fff; }
-.profile-btn.yellow { background: linear-gradient(90deg, #f59e42, #fbbf24); color: #fff; }
-.profile-btn:hover { transform: scale(1.07); filter: brightness(1.1); }
-.profile-btn.copied {
-    background: linear-gradient(90deg, #10b981, #3b82f6);
-    color: #fff;
-    filter: brightness(1.15);
-}
-.profile-stats-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.3rem;
-    margin-bottom: 2rem;
-}
-.profile-stat-card {
-    background: #e0e7ff;
-    border-radius: 12px;
-    padding: 1.2rem 1rem;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
-}
-.profile-stat-title {
-    font-size: 1.1rem;
-    color: #6366f1;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-.profile-stat-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #3b82f6;
-}
-.profile-section {
-    margin-bottom: 2.5rem;
-}
-.profile-section-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #a21caf;
-    margin-bottom: 1rem;
-}
-.table-wrapper {
-    overflow-x: auto;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.06);
-}
-.profile-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    min-width: 600px;
-}
-.profile-table th, .profile-table td {
-    padding: 0.7rem 1rem;
-    text-align: center;
-    border-bottom: 1px solid #f1f5f9;
-}
-.profile-table th {
-    background: #f3f4f6;
-    color: #3b82f6;
-    font-weight: 700;
-    position: sticky;
-    top: 0;
-}
-.profile-table tr:nth-child(even) {
-    background: #f9fafb;
-}
-.bet-status.completed { color: #10b981; font-weight: 700; }
-.bet-status.failed, .bet-status.lost { color: #ef4444; font-weight: 700; }
-.bet-status.pending { color: #f59e42; font-weight: 700; }
-.transaction-status.completed { color: #10b981; font-weight: 700; }
-.transaction-status.failed { color: #ef4444; font-weight: 700; }
-.transaction-status.pending { color: #f59e42; font-weight: 700; }
-
-/* Мобильная адаптивность */
-@media (max-width: 900px) {
-    .profile-main-card {
-        padding: 1.5rem 1rem;
-        margin: 1rem auto;
-    }
-    .profile-header-block {
-        flex-direction: column;
-        align-items: center;
-        gap: 1.5rem;
-        text-align: center;
-    }
-    .profile-stats-cards {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .profile-main-card {
-        padding: 1rem 0.5rem;
-        border-radius: 16px;
-    }
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-    }
-    .profile-avatar-initial {
-        font-size: 2.8rem;
-    }
-    .profile-user-info h1 {
-        font-size: 1.8rem;
-        justify-content: center;
-    }
-    .profile-balance {
-        justify-content: center;
-        font-size: 1rem;
-    }
-    .profile-referral {
-        justify-content: center;
-        text-align: center;
-    }
-    .profile-btn {
-        padding: 0.4rem 1rem;
-        font-size: 0.9rem;
-    }
-    .profile-stats-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .profile-stat-card {
-        padding: 1rem 0.5rem;
-    }
-    .profile-stat-title {
-        font-size: 1rem;
-    }
-    .profile-stat-value {
-        font-size: 1.2rem;
-    }
-
-    /* Адаптивные таблицы для мобильных */
-    .profile-table {
-        min-width: auto;
-    }
-    .profile-table thead {
-        display: none;
-    }
-    .profile-table, .profile-table tbody, .profile-table tr, .profile-table td {
-        display: block;
-    }
-    .profile-table tr {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        padding: 1rem;
-        background: #fff;
-    }
-    .profile-table td {
-        text-align: left;
-        padding: 0.3rem 0;
-        border: none;
-        position: relative;
-        padding-left: 40%;
-    }
-    .profile-table td:before {
-        content: attr(data-label) ": ";
-        position: absolute;
-        left: 0;
-        width: 35%;
-        font-weight: 600;
-        color: #64748b;
-    }
-}
-
-@media (max-width: 480px) {
-    .profile-main-card {
-        margin: 0.5rem auto;
-        padding: 0.8rem 0.3rem;
-    }
-    .profile-alert {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-    }
-    .profile-alert-emoji {
-        font-size: 2rem;
-    }
-    .profile-user-info h1 {
-        font-size: 1.5rem;
-    }
-    .profile-stats-cards {
-        grid-template-columns: 1fr;
-    }
-    .profile-referral {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    .profile-btn {
-        width: 100%;
-        justify-content: center;
-        margin: 0.1rem 0;
-    }
-}
-</style>
 {% endblock %}
